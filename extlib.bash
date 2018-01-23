@@ -1,15 +1,14 @@
 #!/bin/bash
 
+PIDFILE="/tmp/$0.pid"
+LOG_PATH="/tmp/$0.log"
 HELPTEXT="
 Put your description, usage, and help text here
 "
 
-# script should fail on all logic errors, as we don't want to let it run amok
+# Script should fail on all logic errors, as we don't want to let it run amok
 set -e
 set -o pipefail
-
-PIDFILE="/tmp/$0.pid"
-LOG_PATH="/tmp/$0.log"
 
 pprint () {
     # Function to properly wrap and print text
@@ -42,9 +41,10 @@ finally () {
     rm "$PIDFILE"
 }
 
-# trap to do final tasks before exit
+# Trap to do final tasks before exit
 trap finally EXIT
-# trap for killing runaway processes and cleaning up pidfile
+
+# Trap for killing runaway processes and exiting
 trap "quit 'UNKNOWN' 'Exiting on signal' '3'" SIGINT SIGTERM
 
 # Check for and maintain pidfile
@@ -52,9 +52,14 @@ if [ \( -f PIDFILE \) -a \( -d "/proc/$(cat "$PIDFILE" 2> /dev/null)" \) ]
 then
     quit "WARN" "$0 is already running, exiting"
 else
-    #pidfile DOES NOT EXIST
     echo $$ > "$PIDFILE"
     log "INFO" "Starting $0"
 fi
+
+log 'INFO' 'Starting tasks'
+
+#####
+# Put your things here!
+#####
 
 quit 'INFO' 'All tasks completed successfully'
