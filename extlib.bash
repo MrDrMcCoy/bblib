@@ -60,12 +60,12 @@ log_info () {
 }
 
 log_warn () {
-    # Shortcut for `log 'INFO' 'message'`
+    # Shortcut for `log 'WARN' 'message'`
     log "WARN" "$*"
 }
 
 log_err () {
-    # Shortcut for `log 'INFO' 'message'`
+    # Shortcut for `log 'ERROR' 'message'`
     log "ERROR" "$*"
 }
 
