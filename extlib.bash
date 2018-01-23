@@ -32,6 +32,7 @@ CONFIG=(
     [PIDFILE]="/tmp/$0.pid"
     [LOG_PATH]="/tmp/$0.log"
 )
+# Config values can be accessed with "${CONFIG[KEY]}"
 
 pprint () {
     # Function to properly wrap and print text
@@ -71,10 +72,11 @@ trap finally EXIT
 trap "quit 'UNKNOWN' 'Exiting on signal' '3'" SIGINT SIGTERM
 
 configset () {
-    # Sets key and value in array where $1 is a "key=value" string
-    KEY=${1%=*}
-    VALUE=${1#*=}
-    CONFIG[$KEY]=$VALUE
+    # Sets key and value in CONFIG where arguments are a "key=value" string
+    for KV in "$@"
+    do
+        CONFIG[${KV%%=*}]=${KV##*=}
+    done
 }
 
 configprint () {
