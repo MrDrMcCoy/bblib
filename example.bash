@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Import the useful libs
-source extlib.bash
+source "${0%/*}/extlib.bash"
 
 # Optionally import additional configs and functions
 # source your-stuff.bash
@@ -9,8 +9,6 @@ source extlib.bash
 #####
 # Put your actions here!
 #####
-log 'INFO' 'Starting tasks'
+log_info 'Starting tasks'
 # ...
 quit 'INFO' 'All tasks completed successfully'
-
-# fin

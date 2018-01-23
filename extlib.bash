@@ -1,6 +1,7 @@
 #!/bin/bash
 
-HELPTEXT="
+usage () {
+cat << HERE
 $0: An example script
 
 Description:
@@ -12,14 +13,15 @@ Options:
 -s [source-file-path]: Source a bash file with extra functions and variables.
 -v: Enables debugging output for this script
 -x: Print the contents of CONFIG array within this script. Should be specified last to ensure all options are caputred.
-"
+HERE
+}
 
 # Script should fail on all logic errors, as we don't want to let it run amok
 set -e
 set -o pipefail
 
 # This script requires bash version >=4.0 to work. Exit with an error if this requirement is not met.
-if ((BASH_VERSINFO[0] < 4))
+if (( BASH_VERSINFO[0] < 4 ))
 then
     echo "Sorry, you need at least bash-4.0 to run this script." >&2
     exit 1
@@ -50,6 +52,21 @@ log () {
     #         or
     #     log $SEVERITY $MESSAGE
     date +"%x %X | $0 | ${1:-DEBUG} | ${2:-$(cat /dev/stdin)}" | tee -a "${CONFIG[LOG_PATH]}" | pprint >&2
+}
+
+log_info () {
+    # Shortcut for `log 'INFO' 'message'`
+    log "INFO" "$*"
+}
+
+log_warn () {
+    # Shortcut for `log 'INFO' 'message'`
+    log "WARN" "$*"
+}
+
+log_err () {
+    # Shortcut for `log 'INFO' 'message'`
+    log "ERROR" "$*"
 }
 
 quit () {
@@ -93,9 +110,9 @@ configprint () {
 # Parse options
 #####
 # If a .conf file exists for this script, source it immediately
-if [ -f $0.conf ]
+if [ -f "$0.conf" ]
 then
-    source $0.conf
+    source "$0.conf"
 fi
 
 # Accept command-line arguments
@@ -103,7 +120,7 @@ fi
 while getopts ":o:shvx" OPT
 do
     case $OPT in
-        h) pprint <<< "$HELPTEXT" ;;
+        h) usage ;;
         o) configset "$OPTARG" ;;
         s) source "$OPTARG" ;;
         v) set -x ;;
@@ -118,12 +135,5 @@ then
     quit "WARN" "$0 is already running, exiting"
 else
     echo $$ > "${CONFIG[PIDFILE]}"
-    log "INFO" "Starting $0"
+    log_info "Starting $0"
 fi
-
-#####
-# Put your actions here!
-#####
-#log 'INFO' 'Starting tasks'
-
-#quit 'INFO' 'All tasks completed successfully'
