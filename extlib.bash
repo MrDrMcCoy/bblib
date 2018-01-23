@@ -109,7 +109,7 @@ do
         s) source "$OPTARG" ;;
         v) set -x ;;
         x) configprint ;;
-        *) pprint <<< "Invalid option: '-$OPTARG'. For usage, try '$0 -h'." ;;
+        *) quit "ERROR" "Invalid option: '-$OPTARG'. For usage, try '$0 -h'." ;;
     esac
 done
 
