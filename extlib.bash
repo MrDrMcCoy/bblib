@@ -1,4 +1,4 @@
-#!/usr/local/bin/bash
+#!/bin/bash
 
 HELPTEXT="
 $0: An example script
@@ -48,7 +48,7 @@ log () {
     #     command |& log $SEVERITY
     #         or
     #     log $SEVERITY $MESSAGE
-    date +"%x %X | $0 | ${1:-DEBUG} | ${2:-$(cat /dev/stdin)}" | tee -a "${CONFIG[LOG_PATH]}" | pprint 1>&2
+    date +"%x %X | $0 | ${1:-DEBUG} | ${2:-$(cat /dev/stdin)}" | tee -a "${CONFIG[LOG_PATH]}" | pprint >&2
 }
 
 quit () {
@@ -113,10 +113,9 @@ do
     esac
 done
 
-log 'INFO' 'Starting tasks'
-
 #####
 # Put your things here!
 #####
+#log 'INFO' 'Starting tasks'
 
-quit 'INFO' 'All tasks completed successfully'
+#quit 'INFO' 'All tasks completed successfully'
