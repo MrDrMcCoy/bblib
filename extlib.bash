@@ -89,18 +89,15 @@ configprint () {
     echo
 }
 
-# Check for and maintain pidfile
-if [ \( -f "${CONFIG[PIDFILE]}" \) -a \( -d "/proc/$(cat "${CONFIG[PIDFILE]}" 2> /dev/null)" \) ]
-then
-    quit "WARN" "$0 is already running, exiting"
-else
-    echo $$ > "${CONFIG[PIDFILE]}"
-    log "INFO" "Starting $0"
-fi
-
 #####
 # Parse options
 #####
+# If a .conf file exists for this script, source it immediately
+if [ -f $0.conf ]
+then
+    source $0.conf
+fi
+
 # Accept command-line arguments
 # More info here: http://wiki.bash-hackers.org/howto/getopts_tutorial
 while getopts ":o:shvx" OPT
@@ -115,8 +112,17 @@ do
     esac
 done
 
+# Check for and maintain pidfile
+if [ \( -f "${CONFIG[PIDFILE]}" \) -a \( -d "/proc/$(cat "${CONFIG[PIDFILE]}" 2> /dev/null)" \) ]
+then
+    quit "WARN" "$0 is already running, exiting"
+else
+    echo $$ > "${CONFIG[PIDFILE]}"
+    log "INFO" "Starting $0"
+fi
+
 #####
-# Put your things here!
+# Put your actions here!
 #####
 #log 'INFO' 'Starting tasks'
 
