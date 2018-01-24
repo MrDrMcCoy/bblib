@@ -21,20 +21,37 @@ set -o pipefail
 # Set minimal config
 PIDFILE="/tmp/${0}.pid"
 LOGFILE="/tmp/${0}.pid"
-# Create a list of extra commands to run if needed.
-FINALCMDS=()
-# If a .conf file exists for this script, source it immediately
-if [ -f "${0}.conf" ]
-then
-    source "${0}.conf"
-fi
 
-checkbashversion () {
+bash4-features () {
     # Call this function for safety if you use associative arrays or other bash 4.0+ features.
     if (( BASH_VERSINFO[0] < 4 ))
     then
         echo "Sorry, you need at least bash-4.0 to run this script." >&2
         exit 1
+    else
+        # Create a list of extra commands to run if needed.
+        FINALCMDS=()
+        finally () {
+            # Function to perform final tasks before exit
+            for CMD in "${FINALCMDS[@]}"
+            do
+                ${CMD}
+            done
+        }
+        # Trap to do final tasks before exit
+        trap finally EXIT
+
+        checkpid () {
+            # Check for and maintain pidfile
+            if [ \( -f "${PIDFILE}" \) -a \( -d "/proc/$(cat "${PIDFILE}" 2> /dev/null)" \) ]
+            then
+                quit "WARN" "${0} is already running, exiting"
+            else
+                echo $$ > "${PIDFILE}"
+                FINALCMDS+=("rm ${PIDFILE}")
+                log_info "Starting ${0}"
+            fi
+        }
     fi
 }
 
@@ -70,17 +87,6 @@ quit () {
     exit "${3:-3}"
 }
 
-finally () {
-    # Function to perform final tasks before exit
-    for CMD in "${FINALCMDS[@]}"
-    do
-        ${CMD}
-    done
-}
-
-# Trap to do final tasks before exit
-trap finally EXIT
-
 # Trap for killing runaway processes and exiting
 trap "quit 'UNKNOWN' 'Exiting on signal' '3'" SIGINT SIGTERM
 
@@ -98,14 +104,8 @@ argparser () {
     done
 }
 
-checkpid () {
-    # Check for and maintain pidfile
-    if [ \( -f "${PIDFILE}" \) -a \( -d "/proc/$(cat "${PIDFILE}" 2> /dev/null)" \) ]
-    then
-        quit "WARN" "${0} is already running, exiting"
-    else
-        echo $$ > "${PIDFILE}"
-        FINALCMDS+=("rm ${PIDFILE}")
-        log_info "Starting ${0}"
-    fi
-}
+# If a .conf file exists for this script, source it
+if [ -f "${0}.conf" ]
+then
+    source "${0}.conf"
+fi
