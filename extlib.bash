@@ -57,7 +57,7 @@ quit () {
 # Trap for killing runaway processes and exiting
 trap "quit 'UNKNOWN' 'Exiting on signal' '3'" SIGINT SIGTERM
 
-bash4-features () {
+bash4funcs () {
     # Call this function to enable features that depend on bash 4.0+.
     if [ ${BASH_VERSINFO[0]} -lt 4 ]
     then

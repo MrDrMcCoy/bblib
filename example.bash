@@ -6,7 +6,7 @@
 source extlib.bash
 
 # Run some of the functions to help with startup
-bash4-features
+bash4funcs
 argparser "$@"
 checkpid
 

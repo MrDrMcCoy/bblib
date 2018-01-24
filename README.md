@@ -36,9 +36,9 @@ A starting point for well-written and reliable BASH scripts. The functions are d
   - Description: Parses flags passed on the command-line
   - Usage: `argparser "$@"`
   - Notes: This function is meant to be copied into your sourced conf file and modified to suit your script's needs.
-- `bash4-features`
+- `bash4funcs`
   - Description: Enables functions that depend on BASH version >= 4
-  - Usage: `bash4-features`
+  - Usage: `bash4funcs`
   - Sub-functions:
     - `finally`
       - Description: function that runs extra commands before the script exits
