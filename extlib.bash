@@ -60,7 +60,7 @@ log_warn () { log "WARN" "$*" ; }
 log_err () { log "ERROR" "$*" ; }
 
 quit () {
-    # Function to log a message, remove pid file, and exit
+    # Function to log a message and exit
     # Usage:
     #    quit $SEVERITY $MESSAGE $EXITCODE
     log "${1:-WARN}" "${2:-Exiting without reason}"
