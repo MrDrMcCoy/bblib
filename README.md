@@ -2,6 +2,16 @@
 
 A starting point for well-written and reliable BASH scripts. The functions are documented in-line within `extlib.bash`, and a simple example that uses it is in `example.bash`.
 
+## Usage
+
+Add this to the top of your BASH script:
+
+```bash
+source <(wget -qO- https://raw.githubusercontent.com/MrDrMcCoy/bash_template/master/extlib.bash)
+```
+
+Alternately, clone this repo locally and use `source` with the full path to `extlib.bash`.
+
 ## General Info
 
 - This library will automatically source any shell script that is named `${0}.conf` (Example: `yourscript.conf` or `yourscript.sh.conf`). This is the recommended way to add or replace variables and functions outside your main script.
