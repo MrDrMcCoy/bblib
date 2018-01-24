@@ -1,8 +1,6 @@
 #!/bin/bash
 
-#set -x
-
-# Import the useful libs
+# Import the lib
 source extlib.bash
 
 # Run some of the functions to help with startup

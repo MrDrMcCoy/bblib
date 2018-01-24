@@ -42,7 +42,7 @@ A starting point for well-written and reliable BASH scripts. The functions are d
   - Sub-functions:
     - `finally`
       - Description: function that runs extra commands before the script exits
-      - Usage: `FINALCMDS+=("command arg arg")`
+      - Usage: Add actions to its list by running: `FINALCMDS+=("command arg arg")`
     - `checkpid`
       - Description: Checks to see if another copy of this script is running by maintaining a PID file
       - Usage: `checkpid`
