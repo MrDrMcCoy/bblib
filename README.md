@@ -35,9 +35,9 @@ A starting point for well-written and reliable BASH scripts. The functions are d
 - `argparser`
   - Description: Parses flags passed on the command-line
   - Usage: `argparser "$@"`
-  - Notes: This function is meant to be copied into a separate source file and modified to suit your script's needs.
+  - Notes: This function is meant to be copied into your sourced conf file and modified to suit your script's needs.
 - `bash4-features`
-  - Description: Enables functions that depend on BASH4
+  - Description: Enables functions that depend on BASH version >= 4
   - Usage: `bash4-features`
   - Sub-functions:
     - `finally`
@@ -46,6 +46,7 @@ A starting point for well-written and reliable BASH scripts. The functions are d
     - `checkpid`
       - Description: Checks to see if another copy of this script is running by maintaining a PID file
       - Usage: `checkpid`
+      - Notes: This function only works properly in Linux, as it depends on PROCFS.
 
 ## Resources
 
