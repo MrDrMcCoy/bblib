@@ -92,6 +92,7 @@ trap "quit 'UNKNOWN' 'Exiting on signal' '3'" SIGINT SIGTERM
 
 argparser () {
     # Accept command-line arguments
+    # You must pass "$@" as the argument to this function for it to work
     # More info here: http://wiki.bash-hackers.org/howto/getopts_tutorial
     while getopts ":shvx" OPT
     do
