@@ -10,7 +10,7 @@ A starting point for well-written and reliable BASH scripts. The functions are d
   - `PIDFILE="/tmp/${0}.pid"` Should probably be changed to `PIDFILE="/var/run/${0}.pid` in `${0}.conf`
   - `LOGFILE="/tmp/${0}.log"` Should probably be changed to `LOGFILE="/var/log/${0}.log` in `${0}.conf`
 - The library will set a trap for SIGINT and SIGTERM to allow you to kill it should a command behave undesirably.
-- If you use the `bash4-features` function, it will set an additional trap that runs on exit to assist with mandatory cleanup. See the `finally` function for more details.
+- If you use the `bash4funcs` function, it will set an additional trap that runs on exit to assist with mandatory cleanup. See the `finally` function for more details.
 
 ## Function breakdown
 
