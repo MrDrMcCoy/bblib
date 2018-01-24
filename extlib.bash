@@ -19,12 +19,14 @@ set -e
 set -o pipefail
 
 # Set minimal config
-PIDFILE="/tmp/$0.pid"
-LOGFILE="/tmp/$0.pid"
+PIDFILE="/tmp/${0}.pid"
+LOGFILE="/tmp/${0}.pid"
+# Create a list of extra commands to run if needed.
+FINALCMDS=()
 # If a .conf file exists for this script, source it immediately
-if [ -f "$0.conf" ]
+if [ -f "${0}.conf" ]
 then
-    source "$0.conf"
+    source "${0}.conf"
 fi
 
 checkbashversion () {
@@ -51,10 +53,11 @@ log () {
     #     command |& log $SEVERITY
     #         or
     #     log $SEVERITY $MESSAGE
-    date +"%x %X | $0 | ${1:-DEBUG} | ${2:-$(cat /dev/stdin)}" | tee -a "${LOGFILE}" | pprint >&2
+    date +"%x %X | ${0} | ${1:-DEBUG} | ${2:-$(cat /dev/stdin)}" | tee -a "${LOGFILE}" | pprint >&2
 }
 
 # Shorthand log functions
+log_debug () { log "DEBUG" "$*" ; }
 log_info () { log "INFO" "$*" ; }
 log_warn () { log "WARN" "$*" ; }
 log_err () { log "ERROR" "$*" ; }
@@ -69,10 +72,10 @@ quit () {
 
 finally () {
     # Function to perform final tasks before exit
-    if [ -f "${PIDFILE}" ]
-    then
-        rm "${PIDFILE}"
-    fi
+    for CMD in "${FINALCMDS[@]}"
+    do
+        ${CMD}
+    done
 }
 
 # Trap to do final tasks before exit
@@ -86,11 +89,11 @@ argparser () {
     # More info here: http://wiki.bash-hackers.org/howto/getopts_tutorial
     while getopts ":o:shvx" OPT
     do
-        case $OPT in
+        case ${OPT} in
             h) usage ;;
-            s) source "$OPTARG" ;;
+            s) source "${OPTARG}" ;;
             v) set -x ;;
-            *) quit "ERROR" "Invalid option: '-$OPTARG'. For usage, try '$0 -h'." ;;
+            *) quit "ERROR" "Invalid option: '-${OPTARG}'. For usage, try '${0} -h'." ;;
         esac
     done
 }
@@ -99,9 +102,10 @@ checkpid () {
     # Check for and maintain pidfile
     if [ \( -f "${PIDFILE}" \) -a \( -d "/proc/$(cat "${PIDFILE}" 2> /dev/null)" \) ]
     then
-        quit "WARN" "$0 is already running, exiting"
+        quit "WARN" "${0} is already running, exiting"
     else
         echo $$ > "${PIDFILE}"
-        log_info "Starting $0"
+        FINALCMDS+=("rm ${PIDFILE}")
+        log_info "Starting ${0}"
     fi
 }

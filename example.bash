@@ -15,5 +15,6 @@ checkpid
 #####
 log_info 'Starting tasks'
 example_func stuff things
+echo "EXAMPLEVAR = ${EXAMPLEVAR}"
 # ...
 quit 'INFO' 'All tasks completed successfully'
