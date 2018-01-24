@@ -20,7 +20,7 @@ set -o pipefail
 
 # Set minimal config. You should overwrite this with better paths.
 PIDFILE="/tmp/${0}.pid"
-LOGFILE="/tmp/${0}.pid"
+LOGFILE="/tmp/${0}.log"
 
 pprint () {
     # Function to properly wrap and print text

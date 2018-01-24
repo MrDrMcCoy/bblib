@@ -8,7 +8,7 @@ A starting point for well-written and reliable BASH scripts. The functions are d
 - This library sets the shell to exit on the first error from a command or pipe. This ensures safer execution and better debugging.
 - A few defaults are set that you are expected to update with better alterenatives:
   - `PIDFILE="/tmp/${0}.pid"` Should probably be changed to `PIDFILE="/var/run/${0}.pid` in `${0}.conf`
-  - `LOGFILE="/tmp/${0}.pid"` Should probably be changed to `LOGFILE="/var/log/${0}.pid` in `${0}.conf`
+  - `LOGFILE="/tmp/${0}.log"` Should probably be changed to `LOGFILE="/var/log/${0}.log` in `${0}.conf`
 - The library will set a trap for SIGINT and SIGTERM to allow you to kill it should a command behave undesirably.
 - If you use the `bash4-features` function, it will set an additional trap that runs on exit to assist with mandatory cleanup. See the `finally` function for more details.
 
