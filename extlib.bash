@@ -69,7 +69,10 @@ quit () {
 
 finally () {
     # Function to perform final tasks before exit
-    rm "${PIDFILE}"
+    if [ -f "${PIDFILE}" ]
+    then
+        rm "${PIDFILE}"
+    fi
 }
 
 # Trap to do final tasks before exit
