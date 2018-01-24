@@ -41,7 +41,7 @@ A starting point for well-written and reliable BASH scripts. The functions are d
   - Usage: `bash4funcs`
   - Sub-functions:
     - `finally`
-      - Description: function that runs extra commands before the script exits
+      - Description: A function that runs extra commands before the script exits
       - Usage: Add actions to its list by running: `FINALCMDS+=("command arg arg")`
     - `checkpid`
       - Description: Checks to see if another copy of this script is running by maintaining a PID file
