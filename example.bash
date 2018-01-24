@@ -1,11 +1,13 @@
 #!/bin/bash
 
+#set -x
+
 # Import the useful libs
 source extlib.bash
 
 # Run some of the functions to help with startup
 bash4-features
-argparser
+argparser "$@"
 checkpid
 
 # Optionally import additional configs and functions

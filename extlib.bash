@@ -18,13 +18,13 @@ HERE
 set -e
 set -o pipefail
 
-# Set minimal config
+# Set minimal config. You should overwrite this with better paths.
 PIDFILE="/tmp/${0}.pid"
 LOGFILE="/tmp/${0}.pid"
 
 bash4-features () {
     # Call this function for safety if you use associative arrays or other bash 4.0+ features.
-    if (( BASH_VERSINFO[0] < 4 ))
+    if [ ${BASH_VERSINFO[0]} -lt 4 ]
     then
         echo "Sorry, you need at least bash-4.0 to run this script." >&2
         exit 1
@@ -93,7 +93,7 @@ trap "quit 'UNKNOWN' 'Exiting on signal' '3'" SIGINT SIGTERM
 argparser () {
     # Accept command-line arguments
     # More info here: http://wiki.bash-hackers.org/howto/getopts_tutorial
-    while getopts ":o:shvx" OPT
+    while getopts ":shvx" OPT
     do
         case ${OPT} in
             h) usage ;;
