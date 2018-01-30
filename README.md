@@ -52,9 +52,9 @@ Alternately, clone this repo locally and use `source` with the full path to `ext
   - Sub-functions:
     - `finally`
       - Description: A function that runs extra commands before the script exits
-      - Usage: Add actions to its list by running: `FINALCMDS+=("command arg arg")`
+      - Usage: Run `bash4funcs`, and add commands to its array like this: `FINALCMDS+=("command arg arg")`
     - `checkpid`
-      - Description: Checks to see if another copy of this script is running by maintaining a PID file
+      - Description: Checks to see if another copy of the current script is running by maintaining a PID file
       - Usage: `checkpid`
       - Notes: This function only works properly in Linux, as it depends on PROCFS.
 
@@ -64,5 +64,5 @@ If you would like to extend this script, some resources for advanced usage are a
 
 - The BASH Beginners Guide, which is not just for beginners: https://www.tldp.org/LDP/Bash-Beginners-Guide/html/
 - The Advanced BASH guide: http://tldp.org/LDP/abs/html/
-- The Bash Hackers Wiki has great advanced usage description and examples for BASH: http://wiki.bash-hackers.org/
+- The BASH Hackers Wiki has great advanced usage description and examples for BASH: http://wiki.bash-hackers.org/
 - BASH Style Guide: https://google.github.io/styleguide/shell.xml
