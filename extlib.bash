@@ -85,7 +85,7 @@ finally () {
             eval "${CMD}"
         done
     else
-        log "ERROR" "The array of final tasks was empty. Please ensure you set FINALCMDS."
+        log "WARN" "The array of final tasks was empty. Please ensure you set FINALCMDS or run `trap - exit` somewhere in your script."
     fi
 }
 

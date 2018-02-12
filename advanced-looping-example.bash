@@ -6,7 +6,9 @@
 
 # Load the base function library
 source extlib.bash
-checkpid
+
+# Unset the `finally` function from running on exit, as we don't need it here.
+trap - exit
 
 logline () {
     # This function just prints lines passed to it, but could do anything.
@@ -18,7 +20,7 @@ logline () {
     INPUTLINE="$*"
     #####
 
-    log_debug "Input line: $INPUTLINE"
+    log "DEBUG" "Input line: $INPUTLINE"
 }
 
 # Export all functions and variables that need to be available to GNU Parallel and subshells
@@ -26,14 +28,10 @@ export LOGFILE
 export SHELL=$(type -p bash) # So that Parallel knows to use BASH
 export -f pprint
 export -f log
-export -f log_debug
-export -f log_info
-export -f log_warn
-export -f log_err
 export -f logline
 
 # This is how you loop over all filenames in a directory in a linear fashion
-log_info "Doing linear example"
+log "INFO" "Doing linear example"
 while read -r PATH
 do
     # Log the line and strip any leading ./
@@ -47,5 +45,5 @@ done <<< "$(find . -maxdepth 1 -type f)"
 # Using reverse redirection from a limited subshell like this maintains variable scoping.
 
 # This is how you do the same thing, but instead feed the commands to GNU Parallel (if you have it installed)
-log_info "Doing parallel example"
+log "INFO" "Doing parallel example"
 parallel logline <<< "$(find . -maxdepth 1 -type f)"
