@@ -46,17 +46,21 @@ Alternately, clone this repo locally and use `source` with the full path to `ext
   - Description: Parses flags passed on the command-line
   - Usage: `argparser "$@"`
   - Notes: This function is meant to be copied into your sourced conf file and modified to suit your script's needs.
-- `bash4funcs`
-  - Description: Enables functions that depend on BASH version >= 4
-  - Usage: `bash4funcs`
-  - Sub-functions:
-    - `finally`
-      - Description: A function that runs extra commands before the script exits
-      - Usage: Add actions to its list by running: `FINALCMDS+=("command arg arg")`
-    - `checkpid`
-      - Description: Checks to see if another copy of this script is running by maintaining a PID file
-      - Usage: `checkpid`
-      - Notes: This function only works properly in Linux, as it depends on PROCFS.
+- `requireuser`
+  - Description: Checks to see if the user running the script matches the desired username and exits on failure.
+  - Usage: Set `REQUIREUSER` and call `requireuser`
+- `bash4check`
+  - Description: Checks to see if you are on BASH 4.0 or above and exits if not.
+  - Usage: Place `bash4check` at the beginning of any function that uses BASH 4+ features.
+  - Notes: This is currently called by `finally` and `checkpid`
+- `finally`
+  - Description: A function that runs extra commands before the script exits
+  - Usage: Add actions to its list by running: `FINALCMDS+=("command arg arg")`
+  - Notes: This function uses arrays, and is only supported in BASH 4.0+. However, if you redefine it yourself as a regular function, you can call it with `trap finally exit` in older versions.
+- `checkpid`
+  - Description: Checks to see if another copy of this script is running by maintaining a PID file
+  - Usage: `checkpid`
+  - Notes: This function only works properly in Linux, as it depends on PROCFS.
 
 ## Resources
 
