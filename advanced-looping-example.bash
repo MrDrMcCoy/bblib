@@ -25,6 +25,7 @@ logline () {
 
 # Export all functions and variables that need to be available to GNU Parallel and subshells
 export LOGFILE
+export PATH
 export SHELL=$(type -p bash) # So that Parallel knows to use BASH
 export -f pprint
 export -f log
