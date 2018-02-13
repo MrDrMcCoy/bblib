@@ -12,7 +12,6 @@ trap - exit
 
 logline () {
     # This function just prints lines passed to it, but could do anything.
-
     local CURRENT_FUNC="logline"
 
     #####

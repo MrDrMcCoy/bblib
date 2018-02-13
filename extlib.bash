@@ -105,8 +105,18 @@ checkpid () {
 }
 
 requireuser () {
-    # Checks to see if current user matches $REQUIREUSER and exits if not
+    # Checks to see if current user matches $REQUIREUSER and exits if not.
+    # REQUIREUSER can be set as a variable or passed in as an argument.
     local CURRENT_FUNC="requireuser"
+
+    #####
+    # Inputs
+    if [ -n $* ]
+    then
+        local REQUIREUSER="$*"
+    fi
+    #####
+
     if [ -z $REQUIREUSER ]
     then
         quit "ERROR" "REQUIREUSER is not set"
