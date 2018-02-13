@@ -42,7 +42,8 @@ export -f logline
 # This is how you do the same thing, but instead feed the commands to GNU Parallel (if you have it installed)
 if which parallel > /dev/null ; then
     log "INFO" "Doing parallel example"
-    find . -maxdepth 1 -type f | parallel logline
+    find . -maxdepth 1 -type f\
+      | parallel logline
 else
     log "WARN" "GNU Parallel is not installed"
 fi

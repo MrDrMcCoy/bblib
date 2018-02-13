@@ -27,7 +27,9 @@ log () {
   #         or
   #     log $SEVERITY $MESSAGE
   # Do not set CURRENT_FUNC here, as we want to inherit it
-  date +"%x %X | ${0} [${CURRENT_FUNC:-SCRIPT_ROOT}] | ${1:-DEBUG} | ${2:-$(cat /dev/stdin)}" | tee -a "${LOGFILE}" | pprint >&2
+  date +"%x %X | ${0} [${CURRENT_FUNC:-SCRIPT_ROOT}] | ${1:-DEBUG} | ${2:-$(cat /dev/stdin)}"\
+    | tee -a "${LOGFILE}"\
+    | pprint >&2
 }
 
 # Shorthand log functions
