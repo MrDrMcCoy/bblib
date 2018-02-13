@@ -55,7 +55,6 @@ quit () {
     local CURRENT_FUNC="quit"
     log "${1:-WARN}" "${2:-Exiting without reason}"
     exit "${3:-3}"
-
 }
 
 # Trap for killing runaway processes and exiting

@@ -17,10 +17,11 @@ Alternately, clone this repo locally and use `source` with the full path to `ext
 - This library will automatically source any shell script that is named `${0}.conf` (Example: `yourscript.conf` or `yourscript.sh.conf`). This is the recommended way to add or replace variables and functions outside your main script.
 - This library sets the shell to exit on the first error from a command or pipe. This ensures safer execution and better debugging.
 - A few defaults are set that you are expected to update with better alterenatives:
-  - `PIDFILE="/tmp/${0}.pid"` Should probably be changed to `PIDFILE="/var/run/${0}.pid` in `${0}.conf`
-  - `LOGFILE="/tmp/${0}.log"` Should probably be changed to `LOGFILE="/var/log/${0}.log` in `${0}.conf`
+  - `PIDFILE="${PWD}/${0}.pid"`
+  - `LOGFILE="${PWD}/${0}.log"`
 - The library will set a trap for SIGINT and SIGTERM to allow you to kill it should a command behave undesirably.
-- If you use the `bash4funcs` function, it will set an additional trap that runs on exit to assist with mandatory cleanup. See the `finally` function for more details.
+- If you have BASH >= 4.0, it will set an additional trap that runs on exit to assist with mandatory cleanup. See the `finally` function for more details.
+- When defining additional functions, be sure to add `local CURRENT_FUNC="function_name"` to the beginning so that the log function can include it in the output for easier degugging.
 
 ## Function breakdown
 
