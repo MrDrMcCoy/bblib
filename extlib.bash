@@ -1,19 +1,5 @@
 #!/bin/bash
 
-usage () {
-cat << HERE
-$0: An example script
-
-Description:
-Put your description here.
-
-Options:
--h: Print this help
--s [source-file-path]: Source a bash file with extra functions and variables.
--v: Enables debugging output for this script
-HERE
-}
-
 # Script should fail on all logic errors, as we don't want to let it run amok
 set -e
 set -o pipefail
@@ -124,6 +110,20 @@ requireuser () {
     then
         quit "ERROR" "Only $REQUIREUSER is allowed to run this script"
     fi
+}
+
+usage () {
+pprint << HERE
+$0: An example script
+
+Description:
+Put your description here.
+
+Options:
+-h: Print this help
+-s [path]: Source a bash file with extra functions and variables.
+-v: Enables debugging output for this script
+HERE
 }
 
 argparser () {
