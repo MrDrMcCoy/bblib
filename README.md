@@ -12,6 +12,8 @@ source <(wget -qO- https://raw.githubusercontent.com/MrDrMcCoy/bash_template/mas
 
 Alternately, clone this repo locally and use `source` with the full path to `extlib.bash`.
 
+Once `extlib.bash` is sourced in your script, you may refer to any of its supplied functions and/or replace them with your own.
+
 ## General Info
 
 - This library will automatically source any shell script that is named `${0}.conf` (Example: `yourscript.conf` or `yourscript.sh.conf`). This is the recommended way to add or replace variables and functions outside your main script.
