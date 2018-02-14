@@ -4,9 +4,10 @@
 set -e
 set -o pipefail
 
-# Set minimal config. You should overwrite this with better paths.
-PIDFILE="${PWD}/${0}.pid"
-LOGFILE="${PWD}/${0}.log"
+# Set minimal config. You should overwrite these as appropriate.
+export PIDFILE="${PWD}/${0}.pid"
+export LOGFILE="${PWD}/${0}.log"
+export SCRIPT_NAME="${0}"
 # The FINALCMDS array needs to be defined before setting up finally, but only if this is bash >=4.0
 [ ${BASH_VERSINFO[0]} -ge 4 ] && FINALCMDS=()
 
@@ -27,7 +28,7 @@ log () {
   #         or
   #     log $SEVERITY $MESSAGE
   # Do not set CURRENT_FUNC here, as we want to inherit it
-  date +"%x %X | ${0} [${CURRENT_FUNC:-SCRIPT_ROOT}] | ${1:-DEBUG} | ${2:-$(cat /dev/stdin)}"\
+  date +"%x %X | ${SCRIPT_NAME} [${CURRENT_FUNC:-SCRIPT_ROOT}] | ${1:-DEBUG} | ${2:-$(cat /dev/stdin)}"\
     | tee -a "${LOGFILE}"\
     | pprint >&2
 }

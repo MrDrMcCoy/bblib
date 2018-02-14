@@ -7,6 +7,9 @@
 # Load the base function library
 source extlib.bash
 
+# You can set the name of this script to be anything you like
+export SCRIPT_NAME="Advanced Example"
+
 # Unset the `finally` function from running on exit, as we don't need it here.
 trap - exit
 
@@ -47,5 +50,5 @@ if which parallel > /dev/null ; then
 else
     log "WARN" "GNU Parallel is not installed"
 fi
-# Notice how we are doing it the "normal" way here. Since we will be in a subshell anyway, the pipe method is more readable.
+# Notice how we are doing it the "normal" way here. Since GNU Parallel will be in a subshell anyway, the pipe method is more readable.
 # Just remember that you have to be extra careful about variable scoping this way.
