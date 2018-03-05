@@ -1,15 +1,37 @@
 #!/bin/bash
 
-# Script should fail on all logic errors, as we don't want to let it run amok
+# Scripts should fail on all logic errors, as we don't want to let them run amok
 set -e
 set -o pipefail
 
-# Set minimal config. You should overwrite these as appropriate.
-export PIDFILE="${PWD}/${0}.pid"
-export LOGFILE="${PWD}/${0}.log"
-export SCRIPT_NAME="${0}"
-# The FINALCMDS array needs to be defined before setting up finally, but only if this is bash >=4.0
-[ ${BASH_VERSINFO[0]} -ge 4 ] && FINALCMDS=()
+# Configs that need to be exported. You should set these in your source file as appropriate.
+# export PIDFILE="${PWD}/${0}.pid"
+# export LOGFILE="${PWD}/${0}.log"
+# export LOGLEVEL="INFO"
+# export SCRIPT_NAME="${0}"
+
+# The FINALCMDS array needs to be defined before setting up finally
+FINALCMDS=()
+
+inarray () {
+  # Function to see if a string is in an array
+  # It works by taking all passed variables and seing if the last one matches any before it.
+  # It will return 0 and print the array index that matches on success,
+  # and return 1 with nothing printed on failure.
+  # Usage:
+  #   inarray "${ARRAY[@]}" "SEARCHSTRING"
+  #####
+  # Do not set CURRENT_FUNC here
+  local INDICIES=$#
+  local SEARCH=${!INDICIES}
+  for ((INDEX=1 ; INDEX < $# ; INDEX++)) {
+    if [ "${!INDEX}" == "${SEARCH}" ]; then
+      echo "$((INDEX - 1))"
+      return 0
+    fi
+  }
+  return 1
+}
 
 pprint () {
   # Function to properly wrap and print text
@@ -18,19 +40,34 @@ pprint () {
   #       or
   #   pprint <<< "text"
   # Do not set CURRENT_FUNC here, as we want to inherit it
-  fold -sw "$(WIDTH="$(tput cols)" ; echo "${WIDTH:-80}")"
+  local COLUMNS=${COLUMNS:-$(tput cols)}
+  fold -sw "${COLUMNS:-80}"
 }
 
 log () {
-  # Function to send log output to stdout and file
+  # Function to send log output to STDERR and file
   # Usage:
   #     command |& log $SEVERITY
   #         or
   #     log $SEVERITY $MESSAGE
   # Do not set CURRENT_FUNC here, as we want to inherit it
-  date +"%x %X | ${SCRIPT_NAME} [${CURRENT_FUNC:-SCRIPT_ROOT}] | ${1:-DEBUG} | ${2:-$(cat /dev/stdin)}"\
-    | tee -a "${LOGFILE}"\
-    | pprint >&2
+  #####
+  # INPUTS
+  local SEVERITY="$(tr "[:lower:]" "[:upper:]" <<< "${1:-DEBUG}")"
+  local LOGMSG="${2:-$(cat /dev/stdin)}"
+  #####
+  # CONFIG
+  local LOGFILE="${FIFO_LOG:-${LOGFILE:-${0}.log}}"
+  local LOGLEVELS=("TRACE" "DEBUG" "INFO" "WARN" "ERROR" "FATAL" "UNKNOWN")
+  local LOGLEVEL="$(tr "[:lower:]" "[:upper:]" <<< "${LOGLEVEL:-INFO}")"
+  local NUMERIC_LOGLEVEL="$(inarray "${LOGLEVELS[@]}" "${LOGLEVEL}")"
+  local NUMERIC_SEVERITY="$(inarray "${LOGLEVELS[@]}" "${SEVERITY}")"
+  local LOGLINE="$( date +"%x %X | ${SCRIPT_NAME:-$0} [${CURRENT_FUNC:-SCRIPT_ROOT}] | ${SEVERITY} | ${LOGMSG}" )"
+  local COLUMNS=${COLUMNS:-$(tput cols)}
+  #####
+  if [ $NUMERIC_SEVERITY -ge $NUMERIC_LOGLEVEL ] ; then
+    tee -a "$LOGFILE" <<< "$LOGLINE" | fold -sw "${COLUMNS:-80}" >&2
+  fi
 }
 
 # Shorthand log functions
@@ -43,7 +80,7 @@ quit () {
   # Function to log a message and exit
   # Usage:
   #    quit $SEVERITY $MESSAGE $EXITCODE
-  local CURRENT_FUNC="quit"
+  # Do not set CURRENT_FUNC here, as we want to inherit it
   log "${1:-WARN}" "${2:-Exiting without reason}"
   exit "${3:-3}"
 }
@@ -52,33 +89,35 @@ bash4check () {
   # Call this function to enable features that depend on bash 4.0+.
   # Do not set CURRENT_FUNC here, as we want to inherit it
   if [ ${BASH_VERSINFO[0]} -lt 4 ] ; then
-    echo "Sorry, you need at least bash version 4.0 to run this function: $CURRENT_FUNC" >&2
+    log "ERROR" "Sorry, you need at least bash version 4 to run this function: $CURRENT_FUNC"
     return 1
+  else
+    log "DEBUG" "This script is safe to enable BASH version 4 features"
   fi
 }
 
 finally () {
   # Function to perform final tasks before exit
   local CURRENT_FUNC="finally"
-  bash4check
   if [ "${#FINALCMDS[@]}" != 0 ] ; then
     for CMD in "${FINALCMDS[@]}" ; do
       eval "${CMD}"
     done
-  else
-    log "WARN" "The array of final tasks was empty. Please ensure you set FINALCMDS or run `trap - exit` somewhere in your script."
   fi
 }
 
 checkpid () {
   # Check for and maintain pidfile
   local CURRENT_FUNC="checkpid"
-  bash4check
-  if [ -f "${PIDFILE}" ] && [ -d "/proc/$(cat "${PIDFILE}")" ] ; then
+  local PIDFILE="${PIDFILE:-${0}.pid}"
+  if [ ! -d "/proc" ]; then
+    quit "ERROR" "This function requires procfs. Are you on Linux?"
+  elif [ -f "${PIDFILE}" ] && [ -d "/proc/$(cat "${PIDFILE}")" ] ; then
     quit "WARN" "This script is already running, exiting"
   else
     echo $$ > "${PIDFILE}"
     FINALCMDS+=("rm -v '${PIDFILE}'")
+    log "DEBUG" "PID $$ has no conflicts and has been written to ${PIDFILE}"
   fi
 }
 
@@ -86,15 +125,13 @@ requireuser () {
   # Checks to see if current user matches $REQUIREUSER and exits if not.
   # REQUIREUSER can be set as a variable or passed in as an argument.
   local CURRENT_FUNC="requireuser"
-  ##### v INPUTS v #####
-  if [ -n $* ] ; then
-    local REQUIREUSER="$*"
-  fi
-  ##### ^ INPUTS ^ #####
+  local REQUIREUSER="${REQUIREUSER:-$*}"
   if [ -z $REQUIREUSER ] ; then
-    quit "ERROR" "REQUIREUSER is not set"
+    quit "ERROR" "requireuser was called, but \$REQUIREUSER is not set"
   elif [ "$REQUIREUSER" != "$USER" ] ; then
     quit "ERROR" "Only $REQUIREUSER is allowed to run this script"
+  else
+    log "DEBUG" "User '$USER' matches '$REQUIREUSER' and is allowed to run this script"
   fi
 }
 
@@ -114,14 +151,15 @@ HERE
 
 argparser () {
   # Accept command-line arguments
-  # You must pass "$@" as the argument to this function for it to work
+  # Usage:
+  #   argparser "$@"
   # More info here: http://wiki.bash-hackers.org/howto/getopts_tutorial
   local CURRENT_FUNC="argparser"
   while getopts ":shvx" OPT ; do
     case ${OPT} in
       h) usage ;;
       s) source "${OPTARG}" ;;
-      v) set -x ;;
+      v) set -x ; export LOGLEVEL=DEBUG ;;
       *) quit "ERROR" "Invalid option: '-${OPTARG}'. For usage, try '${0} -h'." ;;
     esac
   done
@@ -131,7 +169,7 @@ argparser () {
 trap "quit 'UNKNOWN' 'Exiting on signal' '3'" SIGINT SIGTERM
 
 # Trap to do final tasks before exit
-[ ${BASH_VERSINFO[0]} -ge 4 ] && trap finally EXIT
+trap finally EXIT
 
 # If a .conf file exists for this script, source it
 if [ -f "${0}.conf" ] ; then

@@ -2,16 +2,18 @@
 
 # Import the lib
 source extlib.bash
+# sourcing example.bash.conf is implied if it exists
 
-# Run some of the functions to help with startup
+# Read the default command line arguments
 argparser "$@"
+
+# Ensure only one instance of this script is running
 checkpid
+
+# Validate that the correct user is running this script per the config
 requireuser
 
-# Optionally import additional configs and functions
-# source your-stuff.bash
-
-# Set tasks to run on exit
+# Add task to run on exit
 FINALCMDS+=("example_finally")
 
 #####
@@ -20,11 +22,18 @@ FINALCMDS+=("example_finally")
 #     export -f FUNCTION_NAME
 #####
 
-#####
-# Put your actions here!
-#####
-log_info "Starting tasks"
-example_function stuff things
-log_debug "EXAMPLEVAR = ${EXAMPLEVAR}"
-# ...
+main () {
+  #####
+  # Put your actions here! It is good practice to keep all logic in functions where possible
+  #####
+  local CURRENT_FUNC="main"
+  log_info "Starting tasks"
+  example_function stuff things
+  log_debug "EXAMPLEVAR = ${EXAMPLEVAR}"
+  # ...
+}
+
+# Run main
+log 'INFO' 'Starting main...'
+main
 quit 'INFO' 'All tasks completed successfully'
