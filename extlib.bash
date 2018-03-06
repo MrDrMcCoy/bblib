@@ -61,9 +61,9 @@ log () {
   local LOGLEVEL="$(tr "[:lower:]" "[:upper:]" <<< "${LOGLEVEL:-INFO}")"
   local NUMERIC_LOGLEVEL="$(inarray "${LOGLEVELS[@]}" "${LOGLEVEL}")"
   local NUMERIC_SEVERITY="$(inarray "${LOGLEVELS[@]}" "${SEVERITY}")"
-  local LOGTAG="${SCRIPT_NAME:-$0} [${CURRENT_FUNC:-SCRIPT_ROOT}] "
+  local LOGTAG="[${SCRIPT_NAME:-$0}] [${CURRENT_FUNC:-SCRIPT_ROOT}] [${SEVERITY}] "
   #####
-  if [ $NUMERIC_SEVERITY -le $NUMERIC_LOGLEVEL ] ; then
+  if [ ${NUMERIC_SEVERITY:-5} -le ${NUMERIC_LOGLEVEL:-6} ] ; then
     while read -r LINE ; do
       logger -is -p user.${NUMERIC_LOGLEVEL} -t "${LOGTAG}" -- "${LINE}"
     done <<< "${LOGMSG}"
@@ -166,7 +166,7 @@ argparser () {
 }
 
 # Trap for killing runaway processes and exiting
-trap "quit 'UNKNOWN' 'Exiting on signal' '3'" SIGINT SIGTERM
+trap "quit 'ALERT' 'Exiting on signal' '3'" SIGINT SIGTERM
 
 # Trap to do final tasks before exit
 trap finally EXIT
