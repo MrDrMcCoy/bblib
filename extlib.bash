@@ -5,33 +5,12 @@ set -e
 set -o pipefail
 
 # Configs that need to be exported. You should set these in your source file as appropriate.
-# export PIDFILE="${PWD}/${0}.pid"
-# export LOGFILE="${PWD}/${0}.log"
+# export PIDFILE="${0}.pid"
 # export LOGLEVEL="INFO"
 # export SCRIPT_NAME="${0}"
 
 # The FINALCMDS array needs to be defined before setting up finally
 FINALCMDS=()
-
-inarray () {
-  # Function to see if a string is in an array
-  # It works by taking all passed variables and seing if the last one matches any before it.
-  # It will return 0 and print the array index that matches on success,
-  # and return 1 with nothing printed on failure.
-  # Usage:
-  #   inarray "${ARRAY[@]}" "SEARCHSTRING"
-  #####
-  # Do not set CURRENT_FUNC here
-  local INDICIES=$#
-  local SEARCH=${!INDICIES}
-  for ((INDEX=1 ; INDEX < $# ; INDEX++)) {
-    if [ "${!INDEX}" == "${SEARCH}" ]; then
-      echo "$((INDEX - 1))"
-      return 0
-    fi
-  }
-  return 1
-}
 
 pprint () {
   # Function to properly wrap and print text
@@ -44,12 +23,33 @@ pprint () {
   fold -sw "${COLUMNS:-80}"
 }
 
+inarray () {
+  # Function to see if a string is in an array
+  # It works by taking all passed variables and seing if the last one matches any before it.
+  # It will return 0 and print the array index that matches on success,
+  # and return 1 with nothing printed on failure.
+  # Usage:
+  #   inarray "${ARRAY[@]}" "SEARCHSTRING"
+  #####
+  local INDICIES=$#
+  local SEARCH=${!INDICIES}
+  for ((INDEX=1 ; INDEX < $# ; INDEX++)) {
+    if [ "${!INDEX}" == "${SEARCH}" ]; then
+      echo "$((INDEX - 1))"
+      return 0
+    fi
+  }
+  return 1
+}
+
 log () {
   # Function to send log output to STDERR and file
   # Usage:
   #     command |& log $SEVERITY
   #         or
   #     log $SEVERITY $MESSAGE
+  # Variables:
+  #     LOGLEVEL: The cutoff for message severity to log (Default is INFO).
   # Do not set CURRENT_FUNC here, as we want to inherit it
   #####
   # INPUTS
@@ -57,16 +57,16 @@ log () {
   local LOGMSG="${2:-$(cat /dev/stdin)}"
   #####
   # CONFIG
-  local LOGFILE="${FIFO_LOG:-${LOGFILE:-${0}.log}}"
-  local LOGLEVELS=("TRACE" "DEBUG" "INFO" "WARN" "ERROR" "FATAL" "UNKNOWN")
+  local LOGLEVELS=(EMERGENCY ALERT CRITICAL ERROR WARN NOTICE INFO DEBUG)
   local LOGLEVEL="$(tr "[:lower:]" "[:upper:]" <<< "${LOGLEVEL:-INFO}")"
   local NUMERIC_LOGLEVEL="$(inarray "${LOGLEVELS[@]}" "${LOGLEVEL}")"
   local NUMERIC_SEVERITY="$(inarray "${LOGLEVELS[@]}" "${SEVERITY}")"
-  local LOGLINE="$( date +"%x %X | ${SCRIPT_NAME:-$0} [${CURRENT_FUNC:-SCRIPT_ROOT}] | ${SEVERITY} | ${LOGMSG}" )"
-  local COLUMNS=${COLUMNS:-$(tput cols)}
+  local LOGTAG="${SCRIPT_NAME:-$0} [${CURRENT_FUNC:-SCRIPT_ROOT}] "
   #####
-  if [ $NUMERIC_SEVERITY -ge $NUMERIC_LOGLEVEL ] ; then
-    tee -a "$LOGFILE" <<< "$LOGLINE" | fold -sw "${COLUMNS:-80}" >&2
+  if [ $NUMERIC_SEVERITY -le $NUMERIC_LOGLEVEL ] ; then
+    while read -r LINE ; do
+      logger -is -p user.${NUMERIC_LOGLEVEL} -t "${LOGTAG}" -- "${LINE}"
+    done <<< "${LOGMSG}"
   fi
 }
 

@@ -18,9 +18,6 @@ Once `extlib.bash` is sourced in your script, you may refer to any of its suppli
 
 - This library will automatically source any shell script that is named `${0}.conf` (Example: `yourscript.conf` or `yourscript.sh.conf`). This is the recommended way to add or replace variables and functions outside your main script.
 - This library sets the shell to exit on the first error from a command or pipe. This ensures safer execution and better debugging.
-- A few defaults are set that you are expected to update with better alterenatives:
-  - `PIDFILE="${0}.pid"`
-  - `LOGFILE="${0}.log"`
 - The library will set a trap for SIGINT and SIGTERM to allow you to kill it should a command behave undesirably.
 - It will set an additional trap that runs on exit to assist with mandatory cleanup. See the `finally` function for more details.
 - When defining additional functions, be sure to add `local CURRENT_FUNC="function_name"` to the beginning so that the log function can include it in the output for easier degugging.
@@ -38,14 +35,14 @@ Once `extlib.bash` is sourced in your script, you may refer to any of its suppli
   - Description: Checks to see if a string is in an array and returns the index if true.
   - Usage: `inarray "${ARRAY[@]}" "SEARCHSTRING"`
 - `log`
-  - Description: Formats log messages and writes them to stderr and a file
+  - Description: Formats log messages and writes them to stderr and syslog
   - Usage: `command |& log "SEVERITY"` or `log "SEVERITY" "message"`
   - Aliases:
     - `log_debug` = `log "DEBUG"`
     - `log_info` = `log "INFO"`
     - `log_warn` = `log "WARN"`
     - `log_err` = `log "ERROR"`
-  - Notes: This function depends on `inarray` and `pprint`
+  - Notes: This function depends on `inarray`
 - `quit`
   - Description: Logs a message and exits
   - Usage: `quit "SEVERITY" "message"`
@@ -55,7 +52,7 @@ Once `extlib.bash` is sourced in your script, you may refer to any of its suppli
   - Notes: This function is meant to be copied into your sourced conf file and modified to suit your script's needs.
 - `requireuser`
   - Description: Checks to see if the user running the script matches the desired username and exits on failure.
-  - Usage: Set `REQUIREUSER` and call `requireuser`
+  - Usage: `requireuser USER`
 - `bash4check`
   - Description: Checks to see if you are on BASH 4.0 or above and exits if not.
   - Usage: Place `bash4check` at the beginning of any function that uses BASH 4+ features.
@@ -66,6 +63,24 @@ Once `extlib.bash` is sourced in your script, you may refer to any of its suppli
   - Description: Checks to see if another copy of this script is running by maintaining a PID file
   - Usage: `checkpid`
   - Notes: This function only works properly in Linux, as it depends on PROCFS.
+
+## Variables
+
+- `CURRENT_FUNC`
+  - Description: Set this variable in each function to inform the logger which function is emitting the message.
+  - Default: 'SCRIPT_ROOT'
+- `LOGLEVEL`
+  - Description: Set this to determine the cutoff for logging severity according to the levels in syslog.
+  - Default: 'INFO'
+- `PIDFILE`
+  - Description: The path to a file for tracking the PID of the script if you call `checkpid`.
+  - Default: '${0}.pid'
+- `REQUIREUSER`
+  - Description: Variable to set the user that is allowed to run this script if you call `requireuser`.
+  - Default: _unset_
+- `SCRIPT_NAME`
+  - Description: The name of the script that will appear in the header of all log lines.
+  - Default: "${0}"
 
 ## Resources
 
