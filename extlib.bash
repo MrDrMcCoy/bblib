@@ -50,22 +50,18 @@ log () {
   #     log $SEVERITY $MESSAGE
   # Variables:
   #     LOGLEVEL: The cutoff for message severity to log (Default is INFO).
-  # Do not set CURRENT_FUNC here, as we want to inherit it
   #####
-  # INPUTS
   local SEVERITY="$(tr "[:lower:]" "[:upper:]" <<< "${1:-DEBUG}")"
   local LOGMSG="${2:-$(cat /dev/stdin)}"
-  #####
-  # CONFIG
   local LOGLEVELS=(EMERGENCY ALERT CRITICAL ERROR WARN NOTICE INFO DEBUG)
   local LOGLEVEL="$(tr "[:lower:]" "[:upper:]" <<< "${LOGLEVEL:-INFO}")"
+  local LOGTAG="[${SCRIPT_NAME:-$0}] [${CURRENT_FUNC:-SCRIPT_ROOT}] [${SEVERITY}] "
   local NUMERIC_LOGLEVEL="$(inarray "${LOGLEVELS[@]}" "${LOGLEVEL}")"
   local NUMERIC_SEVERITY="$(inarray "${LOGLEVELS[@]}" "${SEVERITY}")"
-  local LOGTAG="[${SCRIPT_NAME:-$0}] [${CURRENT_FUNC:-SCRIPT_ROOT}] [${SEVERITY}] "
   #####
   if [ ${NUMERIC_SEVERITY:-5} -le ${NUMERIC_LOGLEVEL:-6} ] ; then
     while read -r LINE ; do
-      logger -is -p user.${NUMERIC_LOGLEVEL} -t "${LOGTAG}" -- "${LINE}"
+      logger -is -p user.${NUMERIC_SEVERITY} -t "${LOGTAG}" -- "${LINE}"
     done <<< "${LOGMSG}"
   fi
 }
