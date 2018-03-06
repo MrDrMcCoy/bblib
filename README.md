@@ -34,6 +34,15 @@ Once `extlib.bash` is sourced in your script, you may refer to any of its suppli
 - `inarray`
   - Description: Checks to see if a string is in an array and returns the index if true.
   - Usage: `inarray "${ARRAY[@]}" "SEARCHSTRING"`
+- `uc`
+  - Description: Converts text to uppercase.
+  - Usage: `command | uc` or `uc "text"`
+- `lc`
+  - Description: Converts text to lowercase.
+  - Usage: `command | lc` or `lc "text"`
+- `hr`
+  - Description: Prints a horizontal rule.
+  - Usage: `hr` or `hr $CHARACTER`
 - `log`
   - Description: Formats log messages and writes them to stderr and syslog
   - Usage: `command |& log "SEVERITY"` or `log "SEVERITY" "message"`
@@ -43,7 +52,7 @@ Once `extlib.bash` is sourced in your script, you may refer to any of its suppli
     - `log_warn` = `log "WARN"`
     - `log_err` = `log "ERROR"`
   - Notes:
-    - This function depends on `inarray`.
+    - This function depends on the `inarray` and `uc` functions.
     - The default severity is _INFO_ if you do not define it.
     - Valid severities are _EMERGENCY, ALERT, CRITICAL, ERROR, WARN, NOTICE, INFO, DEBUG_ as per `syslog`. Other severities will numerically equate to NOTICE, but the text will be passed through.
 - `quit`
@@ -90,7 +99,7 @@ Once `extlib.bash` is sourced in your script, you may refer to any of its suppli
 
 If you would like to extend this library, some resources for advanced usage are available here:
 
-- The BASH Beginners Guide, which is not just for beginners: https://www.tldp.org/LDP/Bash-Beginners-Guide/html/
-- The Advanced BASH guide: http://tldp.org/LDP/abs/html/
-- The BASH Hackers Wiki has great advanced usage description and examples for BASH: http://wiki.bash-hackers.org/
-- BASH Style Guide: https://google.github.io/styleguide/shell.xml
+- The BASH Beginners Guide, which is not just for beginners: <https://www.tldp.org/LDP/Bash-Beginners-Guide/html/>
+- The Advanced BASH guide: <http://tldp.org/LDP/abs/html/>
+- The BASH Hackers Wiki has great advanced usage description and examples for BASH: <http://wiki.bash-hackers.org/>
+- BASH Style Guide: <https://google.github.io/styleguide/shell.xml>

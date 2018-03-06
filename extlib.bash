@@ -19,7 +19,7 @@ pprint () {
   #       or
   #   pprint <<< "text"
   # Do not set CURRENT_FUNC here, as we want to inherit it
-  local COLUMNS=${COLUMNS:-$(tput cols)}
+  local COLUMNS="${COLUMNS:-$(tput cols)}"
   fold -sw "${COLUMNS:-80}"
 }
 
@@ -42,6 +42,17 @@ inarray () {
   return 1
 }
 
+# Convert to uppercase
+uc () { tr "[:lower:]" "[:upper:]" <<< "${@:-$(cat /dev/stdin)}" ; }
+# Convert to lowercase
+lc () { tr "[:lower:]" "[:upper:]" <<< "${@:-$(cat /dev/stdin)}" ; }
+# Print horizontal rule
+hr () {
+  local CHARACTER="${1:0:1}"
+  local COLUMNS=${COLUMNS:-$(tput cols)}
+  printf '%*s\n' "${COLUMNS:-80}" '' | tr ' ' "${CHARACTER:--}"
+}
+
 log () {
   # Function to send log output to STDERR and file
   # Usage:
@@ -51,10 +62,10 @@ log () {
   # Variables:
   #     LOGLEVEL: The cutoff for message severity to log (Default is INFO).
   #####
-  local SEVERITY="$(tr "[:lower:]" "[:upper:]" <<< "${1:-DEBUG}")"
+  local SEVERITY="$(uc "${1:-NOTICE}")"
   local LOGMSG="${2:-$(cat /dev/stdin)}"
   local LOGLEVELS=(EMERGENCY ALERT CRITICAL ERROR WARN NOTICE INFO DEBUG)
-  local LOGLEVEL="$(tr "[:lower:]" "[:upper:]" <<< "${LOGLEVEL:-INFO}")"
+  local LOGLEVEL="$(uc "${LOGLEVEL:-INFO}")"
   local LOGTAG="[${SCRIPT_NAME:-$0}] [${CURRENT_FUNC:-SCRIPT_ROOT}] [${SEVERITY}] "
   local NUMERIC_LOGLEVEL="$(inarray "${LOGLEVELS[@]}" "${LOGLEVEL}")"
   local NUMERIC_SEVERITY="$(inarray "${LOGLEVELS[@]}" "${SEVERITY}")"
