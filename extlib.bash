@@ -54,7 +54,7 @@ hr () {
 }
 
 log () {
-  # Function to send log output to STDERR and file
+  # Function to send log output to file, syslog, and stderr
   # Usage:
   #     command |& log $SEVERITY
   #         or
@@ -66,14 +66,16 @@ log () {
   local LOGMSG="${2:-$(cat /dev/stdin)}"
   local LOGLEVELS=(EMERGENCY ALERT CRITICAL ERROR WARN NOTICE INFO DEBUG)
   local LOGLEVEL="$(uc "${LOGLEVEL:-INFO}")"
-  local LOGTAG="[${SCRIPT_NAME:-$0}] [${CURRENT_FUNC:-SCRIPT_ROOT}] [${SEVERITY}] "
+  local LOGTAG="[${SCRIPT_NAME:-$0}] [${CURRENT_FUNC:-SCRIPT_ROOT}] [${SEVERITY}]"
   local NUMERIC_LOGLEVEL="$(inarray "${LOGLEVELS[@]}" "${LOGLEVEL}")"
   local NUMERIC_SEVERITY="$(inarray "${LOGLEVELS[@]}" "${SEVERITY}")"
   #####
   if [ ${NUMERIC_SEVERITY:-5} -le ${NUMERIC_LOGLEVEL:-6} ] ; then
     while read -r LINE ; do
-      logger -is -p user.${NUMERIC_SEVERITY:-5} -t "${LOGTAG}" -- "${LINE}"
-    done <<< "${LOGMSG}"
+      logger -is -p user.${NUMERIC_SEVERITY:-5} -t "${LOGTAG} " -- "${LINE}"
+    done <<< "${LOGMSG}" |& if [ -n "${LOGFILE}" ] ; then
+      tee -a "${LOGFILE}" 2>&1
+    fi
   fi
 }
 

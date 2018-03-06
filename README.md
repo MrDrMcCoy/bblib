@@ -44,7 +44,7 @@ Once `extlib.bash` is sourced in your script, you may refer to any of its suppli
   - Description: Prints a horizontal rule.
   - Usage: `hr` or `hr $CHARACTER`
 - `log`
-  - Description: Formats log messages and writes them to stderr and syslog
+  - Description: Formats log messages and writes them to syslog, stderr, and a file.
   - Usage: `command |& log "SEVERITY"` or `log "SEVERITY" "message"`
   - Aliases:
     - `log_debug` = `log "DEBUG"`
@@ -53,6 +53,7 @@ Once `extlib.bash` is sourced in your script, you may refer to any of its suppli
     - `log_err` = `log "ERROR"`
   - Notes:
     - This function depends on the `inarray` and `uc` functions.
+    - Logging to file requires `$LOGFILE` to be set.
     - The default severity is _INFO_ if you do not define it.
     - Valid severities are _EMERGENCY, ALERT, CRITICAL, ERROR, WARN, NOTICE, INFO, DEBUG_ as per `syslog`. Other severities will numerically equate to NOTICE, but the text will be passed through.
 - `quit`
@@ -85,6 +86,10 @@ Once `extlib.bash` is sourced in your script, you may refer to any of its suppli
   - Description: Set this to determine the cutoff for logging severity according to the levels in `syslog`.
   - Notes: Valid levels are _EMERGENCY, ALERT, CRITICAL, ERROR, WARN, NOTICE, INFO, DEBUG_.
   - Default: 'INFO'
+- `LOGFILE`
+  - Description: Set this to have `log` additionally output to a file.
+  - Notes: This will capture debug output if BASH has `set -x`.
+  - Default: _unset_
 - `PIDFILE`
   - Description: The path to a file for tracking the PID of the script if you call `checkpid`.
   - Default: '${0}.pid'
