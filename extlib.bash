@@ -61,7 +61,7 @@ log () {
   #####
   if [ ${NUMERIC_SEVERITY:-5} -le ${NUMERIC_LOGLEVEL:-6} ] ; then
     while read -r LINE ; do
-      logger -is -p user.${NUMERIC_SEVERITY} -t "${LOGTAG}" -- "${LINE}"
+      logger -is -p user.${NUMERIC_SEVERITY:-5} -t "${LOGTAG}" -- "${LINE}"
     done <<< "${LOGMSG}"
   fi
 }
