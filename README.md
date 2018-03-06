@@ -42,7 +42,10 @@ Once `extlib.bash` is sourced in your script, you may refer to any of its suppli
     - `log_info` = `log "INFO"`
     - `log_warn` = `log "WARN"`
     - `log_err` = `log "ERROR"`
-  - Notes: This function depends on `inarray`
+  - Notes:
+    - This function depends on `inarray`.
+    - The default severity is _INFO_ if you do not define it.
+    - Valid severities are _EMERGENCY, ALERT, CRITICAL, ERROR, WARN, NOTICE, INFO, DEBUG_ as per `syslog`. Other severities will numerically equate to NOTICE, but the text will be passed through.
 - `quit`
   - Description: Logs a message and exits
   - Usage: `quit "SEVERITY" "message"`
@@ -70,7 +73,8 @@ Once `extlib.bash` is sourced in your script, you may refer to any of its suppli
   - Description: Set this variable in each function to inform the logger which function is emitting the message.
   - Default: 'SCRIPT_ROOT'
 - `LOGLEVEL`
-  - Description: Set this to determine the cutoff for logging severity according to the levels in syslog.
+  - Description: Set this to determine the cutoff for logging severity according to the levels in `syslog`.
+  - Notes: Valid levels are _EMERGENCY, ALERT, CRITICAL, ERROR, WARN, NOTICE, INFO, DEBUG_.
   - Default: 'INFO'
 - `PIDFILE`
   - Description: The path to a file for tracking the PID of the script if you call `checkpid`.
