@@ -54,8 +54,9 @@ Once `extlib.bash` is sourced in your script, you may refer to any of its suppli
   - Notes:
     - This function depends on the `inarray` and `uc` functions.
     - Logging to file requires `$LOGFILE` to be set.
-    - The default severity is _INFO_ if you do not define it.
-    - Valid severities are _EMERGENCY, ALERT, CRITICAL, ERROR, WARN, NOTICE, INFO, DEBUG_ as per `syslog`. Other severities will numerically equate to NOTICE, but the text will be passed through.
+    - The default log level is _INFO_ if you do not define it.
+    - The default severity is _NOTICE_ if you do not define it.
+    - Valid levels/severities are _EMERGENCY, ALERT, CRITICAL, ERROR, WARN, NOTICE, INFO, DEBUG_ as per `syslog`. Other severities will equate to NOTICE in `syslog`, but their text will be passed through.
 - `quit`
   - Description: Logs a message and exits
   - Usage: `quit "SEVERITY" "message"`
@@ -82,6 +83,9 @@ Once `extlib.bash` is sourced in your script, you may refer to any of its suppli
 - `CURRENT_FUNC`
   - Description: Set this variable in each function to inform the logger which function is emitting the message.
   - Default: 'SCRIPT_ROOT'
+- `FINALCMDS`
+  - Description: Array containing commands to run on exit. Add actions to its list by running: `FINALCMDS+=("command arg arg")`
+  - Default: ()
 - `LOGLEVEL`
   - Description: Set this to determine the cutoff for logging severity according to the levels in `syslog`.
   - Notes: Valid levels are _EMERGENCY, ALERT, CRITICAL, ERROR, WARN, NOTICE, INFO, DEBUG_.
