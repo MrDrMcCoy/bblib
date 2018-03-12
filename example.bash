@@ -16,18 +16,6 @@ requireuser
 # Add task to run on exit
 FINALCMDS+=("example_finally")
 
-# Add jobs for parallel execution
-JOBQUEUE+=(
-  'echo "Job ran in parallel with PID $BASHPID"'
-  'echo "Job ran in parallel with PID $BASHPID"'
-  'echo "Job ran in parallel with PID $BASHPID"'
-  'echo "Job ran in parallel with PID $BASHPID"'
-  'echo "Job ran in parallel with PID $BASHPID"'
-  'echo "Job ran in parallel with PID $BASHPID"'
-  'echo "Job ran in parallel with PID $BASHPID"'
-  'echo "Job ran in parallel with PID $BASHPID"'
-)
-
 #####
 # If you wish to propagate variables and functions to subshells or GNU Parallel, you will need to export them like so:
 #     export VARIABLE_NAME
@@ -47,7 +35,9 @@ main () {
   # Log a message that shows a variable
   log_debug "EXAMPLEVAR = ${EXAMPLEVAR}"
   # Run the queued jobs from JOBQUEUE in parallel
-  prunner
+  prunner 'echo "Job ran in parallel with PID $BASHPID"' 'echo "Job ran in parallel with PID $BASHPID"'
+  # Use find to create commands to run in parallel
+  find ./ -maxdepth 1 -type f -exec echo echo Found file {} \; | prunner
   # ...
 }
 
