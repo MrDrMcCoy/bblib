@@ -183,30 +183,30 @@ prunner () {
   #     or
   #   command_generator | prunner
   local CURRENT_FUNC="prunner"
-  local JOBQUEUE=()
+  local JOB_QUEUE=()
   # Add input lines to queue, split by newlines
   if [ ! -t 0 ] ; then
     while read -r LINE ; do
-      JOBQUEUE+=("$LINE")
+      JOB_QUEUE+=("$LINE")
     done <<< "$(cat /dev/stdin)"
   fi
   # Add arguments to queue
   for ARG in "$@" ; do
-    JOBQUEUE+=("$ARG")
+    JOB_QUEUE+=("$ARG")
   done
   # Start running the commands in the queue
-  local JOB_MAX="${#JOBQUEUE[@]}"
+  local JOB_MAX="${#JOB_QUEUE[@]}"
   local JOB_INDEX=0
-  log "INFO" "Starting parallel execution of ${#JOBQUEUE[@]} jobs."
-  until [ ${#JOBQUEUE[@]} = 0 ] ; do
+  log "INFO" "Starting parallel execution of ${#JOB_QUEUE[@]} jobs."
+  until [ ${#JOB_QUEUE[@]} = 0 ] ; do
     if [ "$(jobs -rp | wc -l)" -lt "${THREADS:-8}" ] ; then
-      echo "Starting command in parallel ($(($JOB_INDEX+1))/$JOB_MAX): ${JOBQUEUE[$JOB_INDEX]}"
-      eval "${JOBQUEUE[$JOB_INDEX]}" &
-      unset JOBQUEUE[$JOB_INDEX]
+      echo "Starting command in parallel ($(($JOB_INDEX+1))/$JOB_MAX): ${JOB_QUEUE[$JOB_INDEX]}"
+      eval "${JOB_QUEUE[$JOB_INDEX]}" &
+      unset JOB_QUEUE[$JOB_INDEX]
       ((JOB_INDEX++))
     fi
   done |& log 'DEBUG'
-  log "INFO" "Parallel execution finished for ${#JOBQUEUE[@]} jobs."
+  log "INFO" "Parallel execution finished for ${#JOB_QUEUE[@]} jobs."
 }
 
 # Trap for killing runaway processes and exiting
