@@ -78,8 +78,8 @@ Once `extlib.bash` is sourced in your script, you may refer to any of its suppli
   - Usage: `checkpid`
   - Notes: This function only works properly in Linux, as it depends on PROCFS.
 - `prunner`
-  - Description: Executes commands from the array `JOBQUEUE` in parallel.
-  - Usage: `JOBQUEUE+=("command args") ; prunner`
+  - Description: Executes commands in parallel.
+  - Usage: `prunner "command args" "command args"` or `command_generator | prunner`
   - Notes: The number of jobs to run concurrently is controlled by the `THREADS` variable.
 
 ## Variables
@@ -89,9 +89,6 @@ Once `extlib.bash` is sourced in your script, you may refer to any of its suppli
   - Default: 'SCRIPT_ROOT'
 - `FINALCMDS`
   - Description: Array containing commands to run on exit. Add actions to its list by running: `FINALCMDS+=("command arg arg")`
-  - Default: ()
-- `JOBQUEUE`
-  - Description: Array that containd commands to be run in parallel.
   - Default: ()
 - `LOGLEVEL`
   - Description: Set this to determine the cutoff for logging severity according to the levels in `syslog`.

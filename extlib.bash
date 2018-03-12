@@ -11,8 +11,6 @@ set -o pipefail
 
 # The FINALCMDS array needs to be defined before setting up finally
 FINALCMDS=()
-# The JOBQUEUE array needs to be defined before calling prunner
-JOBQUEUE=()
 
 pprint () {
   # Function to properly wrap and print text
@@ -179,20 +177,36 @@ argparser () {
 }
 
 prunner () {
-  # Executes jobs from the array ${JOBQUEUE[@]} in parallel
+  # Executes jobs in parallel
   # Usage:
-  #   JOBQUEUE+=("command args")
-  #   prunner
+  #   prunner "command arg" "command arg"
+  #     or
+  #   command_generator | prunner
   local CURRENT_FUNC="prunner"
-  local JOB_MAX=${#JOBQUEUE[@]}
+  local JOBQUEUE=()
+  # Add input lines to queue, split by newlines
+  if [ ! -t 0 ] ; then
+    while read -r LINE ; do
+      JOBQUEUE+=("$LINE")
+    done <<< "$(cat /dev/stdin)"
+  fi
+  # Add arguments to queue
+  for ARG in "$@" ; do
+    JOBQUEUE+=("$ARG")
+  done
+  # Start running the commands in the queue
+  local JOB_MAX="${#JOBQUEUE[@]}"
+  local JOB_INDEX=0
   log "INFO" "Starting parallel execution of ${#JOBQUEUE[@]} jobs."
   until [ ${#JOBQUEUE[@]} = 0 ] ; do
     if [ "$(jobs -rp | wc -l)" -lt "${THREADS:-8}" ] ; then
-      echo "Running command in parallel ($JOB_MAX/${#JOBQUEUE[@]}): ${JOBQUEUE[-1]}"
-      eval "${JOBQUEUE[-1]}" &
-      unset JOBQUEUE[-1]
+      echo "Starting command in parallel ($(($JOB_INDEX+1))/$JOB_MAX): ${JOBQUEUE[$JOB_INDEX]}"
+      eval "${JOBQUEUE[$JOB_INDEX]}" &
+      unset JOBQUEUE[$JOB_INDEX]
+      ((JOB_INDEX++))
     fi
   done |& log 'DEBUG'
+  log "INFO" "Parallel execution finished for ${#JOBQUEUE[@]} jobs."
 }
 
 # Trap for killing runaway processes and exiting
