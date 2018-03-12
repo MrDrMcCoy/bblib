@@ -11,6 +11,8 @@ set -o pipefail
 
 # The FINALCMDS array needs to be defined before setting up finally
 FINALCMDS=()
+# The JOBQUEUE array needs to be defined before calling prunner
+JOBQUEUE=()
 
 pprint () {
   # Function to properly wrap and print text
@@ -74,7 +76,9 @@ log () {
     while read -r LINE ; do
       logger -is -p user.${NUMERIC_SEVERITY:-5} -t "${LOGTAG} " -- "${LINE}"
     done <<< "${LOGMSG}" |& if [ -n "${LOGFILE}" ] ; then
-      tee -a "${LOGFILE}" 2>&1
+      tee -a "${LOGFILE}" 1>&2
+    else
+      cat /dev/stdin 1>&2
     fi
   fi
 }
@@ -172,6 +176,23 @@ argparser () {
       *) quit "ERROR" "Invalid option: '-${OPTARG}'. For usage, try '${0} -h'." ;;
     esac
   done
+}
+
+prunner () {
+  # Executes jobs from the array ${JOBQUEUE[@]} in parallel
+  # Usage:
+  #   JOBQUEUE+=("command args")
+  #   prunner
+  local CURRENT_FUNC="prunner"
+  local JOB_MAX=${#JOBQUEUE[@]}
+  log "INFO" "Starting parallel execution of ${#JOBQUEUE[@]} jobs."
+  until [ ${#JOBQUEUE[@]} = 0 ] ; do
+    if [ "$(jobs -rp | wc -l)" -lt "${THREADS:-8}" ] ; then
+      echo "Running command in parallel ($JOB_MAX/${#JOBQUEUE[@]}): ${JOBQUEUE[-1]}"
+      eval "${JOBQUEUE[-1]}" &
+      unset JOBQUEUE[-1]
+    fi
+  done |& log 'DEBUG'
 }
 
 # Trap for killing runaway processes and exiting
