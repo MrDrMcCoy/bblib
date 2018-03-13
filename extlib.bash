@@ -197,7 +197,7 @@ prunner () {
   # Start running the commands in the queue
   local JOB_MAX="${#JOB_QUEUE[@]}"
   local JOB_INDEX=0
-  log "INFO" "Starting parallel execution of ${#JOB_QUEUE[@]} jobs."
+  log "INFO" "Starting parallel execution of $JOB_MAX jobs."
   until [ ${#JOB_QUEUE[@]} = 0 ] ; do
     if [ "$(jobs -rp | wc -l)" -lt "${THREADS:-8}" ] ; then
       echo "Starting command in parallel ($(($JOB_INDEX+1))/$JOB_MAX): ${JOB_QUEUE[$JOB_INDEX]}"
@@ -205,8 +205,8 @@ prunner () {
       unset JOB_QUEUE[$JOB_INDEX]
       ((JOB_INDEX++))
     fi
-  done |& log 'DEBUG'
-  log "INFO" "Parallel execution finished for ${#JOB_QUEUE[@]} jobs."
+  done
+  log "INFO" "Parallel execution finished for $JOB_MAX jobs."
 }
 
 # Trap for killing runaway processes and exiting
