@@ -27,25 +27,35 @@ Once `extlib.bash` is sourced in your script, you may refer to any of its suppli
 - `usage`
   - Description: Prints help and usage info
   - Usage: `usage`
-  - Notes: You should replace this with a similar function in your sourced conf file or in your main script.
+  - Notes: This is just an example. You should replace this with a similar function in your sourced conf file or in your main script.
 - `pprint`
   - Description: Properly line-wraps text that is piped in to it
-  - Usage: `command | pprint` or `pprint <<< "text"`
+  - Usage:
+    - `command | pprint`
+    - `pprint <<< "text"`
 - `inarray`
   - Description: Checks to see if a string is in an array and returns the index if true.
   - Usage: `inarray "${ARRAY[@]}" "SEARCHSTRING"`
 - `uc`
   - Description: Converts text to uppercase.
-  - Usage: `command | uc` or `uc "text"`
+  - Usage:
+    - `command | uc`
+    - `uc "text"`
 - `lc`
   - Description: Converts text to lowercase.
-  - Usage: `command | lc` or `lc "text"`
+  - Usage:
+    - `command | lc`
+    - `lc "text"`
 - `hr`
   - Description: Prints a horizontal rule.
-  - Usage: `hr` or `hr $CHARACTER`
+  - Usage:
+    - `hr`
+    - `hr $CHARACTER`
 - `log`
   - Description: Formats log messages and writes them to syslog, stderr, and a file.
-  - Usage: `command |& log "SEVERITY"` or `log "SEVERITY" "message"`
+  - Usage:
+    - `command |& log "SEVERITY"`
+    - `log "SEVERITY" "message"`
   - Aliases:
     - `log_debug` = `log "DEBUG"`
     - `log_info` = `log "INFO"`
@@ -79,7 +89,14 @@ Once `extlib.bash` is sourced in your script, you may refer to any of its suppli
   - Notes: This function only works properly in Linux, as it depends on PROCFS.
 - `prunner`
   - Description: Executes commands in parallel.
-  - Usage: `prunner "command args" "command args"` or `command_generator | prunner`
+  - Usage:
+    - `prunner "command args" "command args"`
+    - `command_generator | prunner`
+    - `prunner -t 6 -c gzip FILE FILE FILE`
+    - `find . -type f | prunner -c gzip -t 8`
+  - Arguments:
+    - `-c`: Command to prepend to each job line. If you do `-c gzip` and pipe in or suffix `prunner` with more lines, the resulting bachground command will be `gzip $JOBLINE`.
+    - `-t`: Threads to use. Default is 8. You can alternately set the `THREADS` environment variable.
   - Notes: The number of jobs to run concurrently is controlled by the `THREADS` variable.
 
 ## Variables

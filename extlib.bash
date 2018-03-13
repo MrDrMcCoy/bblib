@@ -4,11 +4,6 @@
 set -e
 set -o pipefail
 
-# Configs that need to be exported. You should set these in your source file as appropriate.
-# export PIDFILE="${0}.pid"
-# export LOGLEVEL="INFO"
-# export SCRIPT_NAME="${0}"
-
 # The FINALCMDS array needs to be defined before setting up finally
 FINALCMDS=()
 
@@ -18,7 +13,6 @@ pprint () {
   #   command | pprint
   #       or
   #   pprint <<< "text"
-  # Do not set CURRENT_FUNC here, as we want to inherit it
   local COLUMNS="${COLUMNS:-$(tput cols)}"
   fold -sw "${COLUMNS:-80}"
 }
@@ -74,11 +68,11 @@ log () {
     while read -r LINE ; do
       logger -is -p user.${NUMERIC_SEVERITY:-5} -t "${LOGTAG} " -- "${LINE}"
     done <<< "${LOGMSG}" |& if [ -n "${LOGFILE}" ] ; then
-      tee -a "${LOGFILE}" 1>&2
+      tee -a "${LOGFILE}"
     else
-      cat /dev/stdin 1>&2
+      cat /dev/stdin
     fi
-  fi
+  fi 1>&2
 }
 
 # Shorthand log functions
@@ -91,14 +85,12 @@ quit () {
   # Function to log a message and exit
   # Usage:
   #    quit $SEVERITY $MESSAGE $EXITCODE
-  # Do not set CURRENT_FUNC here, as we want to inherit it
   log "${1:-WARN}" "${2:-Exiting without reason}"
   exit "${3:-3}"
 }
 
 bash4check () {
   # Call this function to enable features that depend on bash 4.0+.
-  # Do not set CURRENT_FUNC here, as we want to inherit it
   if [ ${BASH_VERSINFO[0]} -lt 4 ] ; then
     log "ERROR" "Sorry, you need at least bash version 4 to run this function: $CURRENT_FUNC"
     return 1
@@ -112,6 +104,7 @@ finally () {
   local CURRENT_FUNC="finally"
   if [ "${#FINALCMDS[@]}" != 0 ] ; then
     for CMD in "${FINALCMDS[@]}" ; do
+      log "DEBUG" "Executing pre-exit command: ${CMD}"
       eval "${CMD}"
     done
   fi
@@ -121,7 +114,7 @@ checkpid () {
   # Check for and maintain pidfile
   local CURRENT_FUNC="checkpid"
   local PIDFILE="${PIDFILE:-${0}.pid}"
-  if [ ! -d "/proc" ]; then
+  if [ ! -d "/proc/$$" ]; then
     quit "ERROR" "This function requires procfs. Are you on Linux?"
   elif [ -f "${PIDFILE}" ] && [ -d "/proc/$(cat "${PIDFILE}")" ] ; then
     quit "WARN" "This script is already running, exiting"
@@ -166,11 +159,12 @@ argparser () {
   #   argparser "$@"
   # More info here: http://wiki.bash-hackers.org/howto/getopts_tutorial
   local CURRENT_FUNC="argparser"
-  while getopts ":shvx" OPT ; do
+  while getopts ":s:hv" OPT ; do
     case ${OPT} in
       h) usage ;;
       s) source "${OPTARG}" ;;
-      v) set -x ; export LOGLEVEL=DEBUG ;;
+      v) set -x ; LOGLEVEL=DEBUG ;;
+      :) quit "ERROR" "Option '-${OPT}' requires an argument. For usage, try '${0} -h'." ;;
       *) quit "ERROR" "Invalid option: '-${OPTARG}'. For usage, try '${0} -h'." ;;
     esac
   done
@@ -184,29 +178,36 @@ prunner () {
   #   command_generator | prunner
   local CURRENT_FUNC="prunner"
   local JOB_QUEUE=()
+  local COMMAND=""
   # Add input lines to queue, split by newlines
   if [ ! -t 0 ] ; then
     while read -r LINE ; do
       JOB_QUEUE+=("$LINE")
     done <<< "$(cat /dev/stdin)"
   fi
-  # Add arguments to queue
-  for ARG in "$@" ; do
-    JOB_QUEUE+=("$ARG")
+  # Process options
+  while getopts ":c:t:" OPT ; do
+    case ${OPT} in
+      c) local COMMAND="${OPTARG}" ;;
+      t) local THREADS="${OPTARG}" ;;
+      :) quit "ERROR" "Option '-${OPT}' requires an argument." ;;
+      *) JOB_QUEUE+=("${OPTARG}") ;;
+    esac
   done
-  # Start running the commands in the queue
   local JOB_MAX="${#JOB_QUEUE[@]}"
   local JOB_INDEX=0
-  log "INFO" "Starting parallel execution of $JOB_MAX jobs."
+  local THREADS=${THREADS:-8}
+  # Start running the commands in the queue
+  log "DEBUG" "Starting parallel execution of $JOB_MAX jobs with $THREADS threads."
   until [ ${#JOB_QUEUE[@]} = 0 ] ; do
-    if [ "$(jobs -rp | wc -l)" -lt "${THREADS:-8}" ] ; then
-      echo "Starting command in parallel ($(($JOB_INDEX+1))/$JOB_MAX): ${JOB_QUEUE[$JOB_INDEX]}"
-      eval "${JOB_QUEUE[$JOB_INDEX]}" &
+    if [ "$(jobs -rp | wc -l)" -lt "${THREADS}" ] ; then
+      log "DEBUG" "Starting command in parallel ($(($JOB_INDEX+1))/$JOB_MAX): ${COMMAND} ${JOB_QUEUE[$JOB_INDEX]}"
+      eval "${COMMAND} ${JOB_QUEUE[$JOB_INDEX]}" |& log "DEBUG" &
       unset JOB_QUEUE[$JOB_INDEX]
       ((JOB_INDEX++))
     fi
   done
-  log "INFO" "Parallel execution finished for $JOB_MAX jobs."
+  log "DEBUG" "Parallel execution finished for $JOB_MAX jobs."
 }
 
 # Trap for killing runaway processes and exiting
