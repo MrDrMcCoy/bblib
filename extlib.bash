@@ -11,7 +11,6 @@ pprint () {
   # Function to properly wrap and print text
   # Usage:
   #   command | pprint
-  #       or
   #   pprint <<< "text"
   local COLUMNS="${COLUMNS:-$(tput cols)}"
   fold -sw "${COLUMNS:-80}"
@@ -51,7 +50,6 @@ log () {
   # Function to send log output to file, syslog, and stderr
   # Usage:
   #     command |& log $SEVERITY
-  #         or
   #     log $SEVERITY $MESSAGE
   # Variables:
   #     LOGLEVEL: The cutoff for message severity to log (Default is INFO).
@@ -173,9 +171,10 @@ argparser () {
 prunner () {
   # Executes jobs in parallel
   # Usage:
-  #   prunner "command arg" "command arg"
-  #     or
+  #   prunner "command args" "command args"
   #   command_generator | prunner
+  #   prunner -t 6 -c gzip FILE FILE FILE
+  #   find . -type f | prunner -c gzip -t 8
   local CURRENT_FUNC="prunner"
   local JOB_QUEUE=()
   local COMMAND=""
