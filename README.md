@@ -7,12 +7,12 @@ The _"Better BASH Library"_: A set of functions to assist with creating well-wri
 Add this to the top of your BASH script:
 
 ```bash
-source <(wget -qO- https://raw.githubusercontent.com/MrDrMcCoy/bash_template/master/extlib.bash)
+source <(wget -qO- https://raw.githubusercontent.com/MrDrMcCoy/bash_template/master/bblib.bash)
 ```
 
 Alternately, clone this repo locally and use `source` with the full path to `bblib.bash`.
 
-Once `extlib.bash` is sourced in your script, you may refer to any of its supplied functions and/or replace them with your own.
+Once `bblib.bash` is sourced in your script, you may refer to any of its supplied functions and/or replace them with your own.
 
 ## General Info
 
@@ -145,9 +145,13 @@ Once `extlib.bash` is sourced in your script, you may refer to any of its suppli
 The commands that `bblib.bash` calls out to are listed here, in case you are on a system that does not have them:
 
 - `fold`
+  - Used by: `pprint`
 - `tr`
+  - Used by: `uc`, `lc`, `log`
 - `logger`
+  - Used by: `log`
 - `getopts`
+  - Used by: `argparser`
 
 ## Resources
 
