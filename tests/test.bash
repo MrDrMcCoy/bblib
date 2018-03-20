@@ -62,4 +62,6 @@ main () {
   quit "INFO" "All tests finished."
 }
 
+main
+
 quit "ERROR" "Script reached end unexpecedtly!"
