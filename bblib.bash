@@ -105,12 +105,11 @@ bash4check () {
 finally () {
   # Function to perform final tasks before exit
   local CURRENT_FUNC="finally"
-  if [ "${#FINALCMDS[@]}" != 0 ] ; then
-    for CMD in "${FINALCMDS[@]}" ; do
-      log "DEBUG" "Executing pre-exit command: ${CMD}"
-      eval "${CMD}"
-    done
-  fi
+  until [ "${#FINALCMDS[@]}" == 0 ] ; do
+      log "DEBUG" "Executing pre-exit command: ${FINALCMDS[-1]}"
+      eval "${FINALCMDS[-1]}"
+      unset FINALCMDS[-1]
+  done
 }
 
 checkpid () {
