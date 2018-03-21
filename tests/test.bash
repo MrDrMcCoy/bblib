@@ -48,7 +48,6 @@ main () {
   checkpid
   log "DEBUG" "Test checkpid in second shell"
   bash -c 'source ../bblib.bash ; checkpid' || true
-  quit INFO "stopping here"
 
   # User check
   log "DEBUG" "Test requireuser with \$REQUIREUSER"
@@ -59,6 +58,7 @@ main () {
   bash -c 'source ../bblib.bash ; source test.bash.conf ; requireuser n00b' || true
   log "DEBUG" "Test requireuser with current user"
   bash -c 'source ../bblib.bash ; source test.bash.conf ; requireuser "$USER"' || true
+  quit INFO "stopping here"
 
   # Generate test files
   log "DEBUG" "Generating test files"
