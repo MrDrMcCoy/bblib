@@ -210,7 +210,7 @@ prunner () {
   log "DEBUG" "JOB_MAX=$JOB_MAX"
   log "DEBUG" "JOB_INDEX=$JOB_INDEX"
   log "DEBUG" "THREADS=$THREADS"
-  log "DEBUG" "JOB_QUEUE=${JOB_QUEUE[@]}"
+  log "DEBUG" "JOB_QUEUE='${JOB_QUEUE[@]}'"
   log "DEBUG" "Starting parallel execution of $JOB_MAX jobs with $THREADS threads."
   until [ ${#JOB_QUEUE[@]} = 0 ] ; do
     if [ "$(jobs -rp | wc -l)" -lt "${THREADS}" ] ; then
