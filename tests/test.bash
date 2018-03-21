@@ -8,17 +8,25 @@ main () {
   log "DEBUG" "Starting tests"
 
   # Test argparser
+  log "DEBUG" "Test argparser -h"
   bash -c 'source ../bblib.bash ; source test.conf ; argparser -h' || true
+  log "DEBUG" "Test argparser -v"
   bash -c 'source ../bblib.bash ; source test.conf ; argparser -v' || true
+  log "DEBUG" "Test argparser -s test.conf"
   bash -c 'source ../bblib.bash ; source test.conf ; argparser -s test.conf' || true
+  log "DEBUG" "Test argparser -s"
   bash -c 'source ../bblib.bash ; source test.conf ; argparser -s' || true
+  log "DEBUG" "Test argparser -y"
   bash -c 'source ../bblib.bash ; source test.conf ; argparser -y' || true
 
   # Test hr
+  log "DEBUG" "Test hr ="
   hr =
 
   # Test lc, uc, and pprint
+  log "DEBUG" "Test lc"
   lc < lorem-ipsum.txt | pprint > lorem-ipsum-lc-pprint.out |& log "DEBUG"
+  log "DEBUG" "Test uc"
   uc < lorem-ipsum.txt | pprint > lorem-ipsum-uc-pprint.out |& log "DEBUG"
 
   # Test shorthand loggers
@@ -32,29 +40,39 @@ main () {
   log_emer "shorthand test"
 
   # Test for bash 4
+  log "DEBUG" "Test bash4check"
   bash4check
 
   # Pid check
+  log "DEBUG" "Test checkpid"
   checkpid
+  log "DEBUG" "Test checkpid in second shell"
   bash -c 'source ../bblib.bash ; source test.conf ; checkpid' || true
 
   # User check
+  log "DEBUG" "Test requireuser with \$REQUIREUSER"
   bash -c 'source ../bblib.bash ; source test.conf ; requireuser' || true
-  bash -c 'source ../bblib.bash ; source test.conf ; requireuser n00b' ||
-  bash -c 'source ../bblib.bash ; source test.conf ; unset REQUIREUSER ; requireuser' || truetrue
+  log "DEBUG" "Test requireuser without \$REQUIREUSER"
+  bash -c 'source ../bblib.bash ; source test.conf ; unset REQUIREUSER ; requireuser' || true
+  log "DEBUG" "Test requireuser n00b"
+  bash -c 'source ../bblib.bash ; source test.conf ; requireuser n00b' || true
+  log "DEBUG" "Test requireuser with current user"
   bash -c 'source ../bblib.bash ; source test.conf ; requireuser "$USER"' || true
 
   # Generate test files
+  log "DEBUG" "Generating test files"
   for f in random{0..32} ; do
     dd if=/dev/random bs=1M count=1 | base64 > $f.out &
   done
   wait
 
   # Parallel test
+  log "DEBUG" "Test prunner gzipping the .out files"
   prunner -c "gzip -v" *.out
 
   # Add cleanup tasks
   #FINALCMDS+=('rm -v *.out')
+  #FINALCMDS+=('rm -v *.gz')
 
   quit "INFO" "All tests finished."
 }
