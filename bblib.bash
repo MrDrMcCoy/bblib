@@ -38,7 +38,7 @@ inarray () {
 # Convert to uppercase
 uc () { tr "[:lower:]" "[:upper:]" <<< "${@:-$(cat /dev/stdin)}" ; }
 # Convert to lowercase
-lc () { tr "[:lower:]" "[:upper:]" <<< "${@:-$(cat /dev/stdin)}" ; }
+lc () { tr "[:upper:]" "[:lower:]" <<< "${@:-$(cat /dev/stdin)}" ; }
 # Print horizontal rule
 hr () {
   local CHARACTER="${1:0:1}"
@@ -207,17 +207,13 @@ prunner () {
   local JOB_INDEX=0
   local THREADS=${THREADS:-8}
   # Start running the commands in the queue
-  log "DEBUG" "JOB_MAX=$JOB_MAX"
-  log "DEBUG" "JOB_INDEX=$JOB_INDEX"
-  log "DEBUG" "THREADS=$THREADS"
-  log "DEBUG" "JOB_QUEUE='${JOB_QUEUE[@]}'"
   log "DEBUG" "Starting parallel execution of $JOB_MAX jobs with $THREADS threads."
   until [ ${#JOB_QUEUE[@]} = 0 ] ; do
     if [ "$(jobs -rp | wc -l)" -lt "${THREADS}" ] ; then
       log "DEBUG" "Starting command in parallel ($(($JOB_INDEX+1))/$JOB_MAX): ${COMMAND} ${JOB_QUEUE[$JOB_INDEX]}"
       eval "${COMMAND} ${JOB_QUEUE[$JOB_INDEX]}" |& log "DEBUG" || true &
       unset JOB_QUEUE[$JOB_INDEX]
-      ((JOB_INDEX++)) || true
+      ((JOB_INDEX++)) || true # I have no idea why this needs '|| true', but it does and it works.
     fi
   done
   wait
