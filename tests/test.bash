@@ -49,7 +49,7 @@ main () {
   checkpid
   set +x
   log "DEBUG" "Test checkpid in second shell"
-  bash -xc 'source ../bblib.bash ; source test.bash.conf ; checkpid' || true
+  bash -c 'source ../bblib.bash ; set -x ; checkpid ; set +x' || true
   quit INFO "stopping here"
 
   # User check
