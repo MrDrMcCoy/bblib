@@ -190,7 +190,7 @@ prunner () {
       :) quit "ERROR" "Option '-${OPTARG}' requires an argument." ;;
       *) quit "ERROR" "Option '-${OPTARG}' is not defined." ;;
     esac
-  done
+  done <<< "$@"
   # Add input lines to queue, split by newlines
   if [ ! -t 0 ] ; then
     while read -r LINE ; do
