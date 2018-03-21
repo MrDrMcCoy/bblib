@@ -68,9 +68,9 @@ main () {
 
   # Parallel test
   log "DEBUG" "Test prunner gzipping the .out files"
-  #set -x
+  set -x
   prunner -c "gzip -vk" *.out
-  #set +x
+  set +x
   quit INFO "stopping here"
 
   # Add cleanup tasks

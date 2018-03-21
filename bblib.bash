@@ -211,9 +211,9 @@ prunner () {
   log "DEBUG" "Starting parallel execution of $JOB_MAX jobs with $THREADS threads."
   until [ ${#JOB_QUEUE[@]} = 0 ] ; do
     if [ "$(jobs -rp | wc -l)" -lt "${THREADS}" ] ; then
-      log "DEBUG" "Starting command in parallel ($(($JOB_INDEX+1))/$JOB_MAX): ${COMMAND} ${JOB_QUEUE[-1]}"
-      eval "${COMMAND} ${JOB_QUEUE[-1]}" |& log "DEBUG" &
-      unset JOB_QUEUE[-1]
+      log "DEBUG" "Starting command in parallel ($(($JOB_INDEX+1))/$JOB_MAX): ${COMMAND} ${JOB_QUEUE[$JOB_INDEX]}"
+      eval "${COMMAND} ${JOB_QUEUE[$JOB_INDEX]}" |& log "DEBUG" &
+      unset JOB_QUEUE[$JOB_INDEX]
       ((JOB_INDEX++))
     fi
   done
