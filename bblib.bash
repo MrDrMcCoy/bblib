@@ -120,7 +120,7 @@ checkpid () {
   if [ ! -d "/proc/$$" ]; then
     quit "ERROR" "This function requires procfs. Are you on Linux?"
   elif [ "$(cat "${PIDFILE}" 2> /dev/null)" = "$$" ] ; then
-    quit "WARN" "This script is already running, exiting"
+    quit "WARN" "This script is already running with PID $(cat "${PIDFILE}" 2> /dev/null), exiting"
   else
     echo -n "$$" > "${PIDFILE}"
     FINALCMDS+=("rm -v '${PIDFILE}'")
