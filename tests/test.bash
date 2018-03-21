@@ -8,13 +8,11 @@ main () {
   log "DEBUG" "Starting tests"
 
   # Test argparser
-  argparser -v
-  # Disable bash debugging
-  set +x
-  argparser -s test.conf
-  argparser -s || true &
-  argparser -y || true &
-  argparser -h
+  bash -c 'source ../bblib.bash ; source test.conf ; argparser -h' || true
+  bash -c 'source ../bblib.bash ; source test.conf ; argparser -v' || true
+  bash -c 'source ../bblib.bash ; source test.conf ; argparser -s test.conf' || true
+  bash -c 'source ../bblib.bash ; source test.conf ; argparser -s' || true
+  bash -c 'source ../bblib.bash ; source test.conf ; argparser -y' || true
 
   # Test hr
   hr =
@@ -41,23 +39,22 @@ main () {
   bash -c 'source ../bblib.bash ; source test.conf ; checkpid' || true
 
   # User check
-  requireuser || true &
-  requireuser n00b || true &
-  requireuser "$USER"
-  unset REQUIREUSER
-  requireuser || true &
+  bash -c 'source ../bblib.bash ; source test.conf ; requireuser' || true
+  bash -c 'source ../bblib.bash ; source test.conf ; requireuser n00b' ||
+  bash -c 'source ../bblib.bash ; source test.conf ; unset REQUIREUSER ; requireuser' || truetrue
+  bash -c 'source ../bblib.bash ; source test.conf ; requireuser "$USER"' || true
 
   # Generate test files
   for f in random{0..32} ; do
-    dd if=/dev/random bs=1M count=1 | base64 > $f.out
+    dd if=/dev/random bs=1M count=1 | base64 > $f.out &
   done
+  wait
 
   # Parallel test
-  prunner -c "gzip -vk" *.out
+  prunner -c "gzip -v" *.out
 
   # Add cleanup tasks
-  FINALCMDS+=('rm -v *.gz')
-  FINALCMDS+=('rm -v *.out')
+  #FINALCMDS+=('rm -v *.out')
 
   quit "INFO" "All tests finished."
 }
