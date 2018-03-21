@@ -212,7 +212,7 @@ prunner () {
       log "DEBUG" "Starting command in parallel ($(($JOB_INDEX+1))/$JOB_MAX): ${COMMAND} ${JOB_QUEUE[$JOB_INDEX]}"
       eval "${COMMAND} ${JOB_QUEUE[$JOB_INDEX]}" |& log "DEBUG" &
       unset JOB_QUEUE[$JOB_INDEX]
-      ((JOB_INDEX++))
+      local JOB_INDEX+=1
     fi
   done
   log "DEBUG" "Parallel execution finished for $JOB_MAX jobs."
