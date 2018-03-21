@@ -193,14 +193,15 @@ prunner () {
     esac
   done
   # Add input lines to queue, split by newlines
-  while read -rt 2 LINE ; do
-    JOB_QUEUE+=("$LINE")
-  done
+  if [ ! -t 0 ] ; then
+    while read -r LINE ; do
+      JOB_QUEUE+=("$LINE")
+    done
+  fi
   # Add non-option arguments to queue
   shift $(($OPTIND-1))
-  while [ $# -gt 0 ] ; do
-    JOB_QUEUE+=("$1")
-    shift
+  for ARG in "$@" ; do
+    JOB_QUEUE+=("$ARG")
   done
   local JOB_MAX="${#JOB_QUEUE[@]}"
   local JOB_INDEX=0
@@ -212,7 +213,7 @@ prunner () {
       log "DEBUG" "Starting command in parallel ($(($JOB_INDEX+1))/$JOB_MAX): ${COMMAND} ${JOB_QUEUE[$JOB_INDEX]}"
       eval "${COMMAND} ${JOB_QUEUE[$JOB_INDEX]}" |& log "DEBUG" &
       unset JOB_QUEUE[$JOB_INDEX]
-      local JOB_INDEX+=1
+      ((JOB_INDEX++))
     fi
   done
   log "DEBUG" "Parallel execution finished for $JOB_MAX jobs."
