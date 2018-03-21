@@ -68,14 +68,11 @@ main () {
 
   # Parallel test
   log "DEBUG" "Test prunner gzipping the .out files"
-  set -x
   prunner -c "gzip -vk" *.out
-  set +x
-  quit INFO "stopping here"
 
   # Add cleanup tasks
   #FINALCMDS+=('rm -v *.out')
-  #FINALCMDS+=('rm -v *.gz')
+  FINALCMDS+=('rm -v *.gz')
 
   quit "INFO" "All tests finished."
 }
