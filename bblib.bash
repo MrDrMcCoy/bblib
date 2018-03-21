@@ -183,7 +183,7 @@ prunner () {
   local JOB_QUEUE=()
   local COMMAND=""
   # Process options
-  log "DEBUG" "ARGS='$@'"
+  echo "ARGS='$@'"
   set -x
   while getopts "c:t:" OPT ; do
     case ${OPT} in
