@@ -193,11 +193,9 @@ prunner () {
     esac
   done
   # Add input lines to queue, split by newlines
-  if [ ! -t 0 ] ; then
-    while read -r LINE ; do
-      JOB_QUEUE+=("$LINE")
-    done <<< "$(cat /dev/stdin)"
-  fi
+  while read -rt 2 LINE ; do
+    JOB_QUEUE+=("$LINE")
+  done
   # Add non-option arguments to queue
   shift $(($OPTIND-1))
   while [ $# -gt 0 ] ; do
