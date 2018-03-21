@@ -45,11 +45,9 @@ main () {
 
   # Pid check
   log "DEBUG" "Test checkpid"
-  set -x
   checkpid
-  set +x
   log "DEBUG" "Test checkpid in second shell"
-  bash -c 'source ../bblib.bash ; set -x ; checkpid ; set +x' || true
+  bash -c 'source ../bblib.bash ; checkpid' || true
   quit INFO "stopping here"
 
   # User check
