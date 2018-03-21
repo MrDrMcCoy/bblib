@@ -184,16 +184,14 @@ prunner () {
   local COMMAND=""
   # Process options
   echo "ARGS='$@'"
-  set -x
-  while getopts "c:t:" OPT ; do
+  while getopts ":c:t:" OPT ; do
     case ${OPT} in
-      c) local COMMAND="${OPTARG}" ; echo "COMMAND=$COMMAND" ;;
-      t) local THREADS="${OPTARG}" ; echo "THREADS=$THREADS" ;;
+      c) COMMAND="${OPTARG}" ;;
+      t) THREADS="${OPTARG}" ;;
       :) quit "ERROR" "Option '-${OPTARG}' requires an argument." ;;
       *) quit "ERROR" "Option '-${OPTARG}' is not defined." ;;
     esac
   done
-  set +x
   # Add input lines to queue, split by newlines
   if [ ! -t 0 ] ; then
     while read -r LINE ; do
