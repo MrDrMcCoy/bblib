@@ -188,8 +188,8 @@ prunner () {
     case ${OPT} in
       c) local COMMAND="${OPTARG}" ;;
       t) local THREADS="${OPTARG}" ;;
-      :) quit "ERROR" "Option '-${OPT}' requires an argument." ;;
-      *) JOB_QUEUE+=("${OPTARG}") ;;
+      :) quit "ERROR" "Option '-${OPTARG}' requires an argument." ;;
+      *) quit "ERROR" "Option '-${OPTARG}' is not defined." ;;
     esac
   done
   # Add input lines to queue, split by newlines
@@ -198,6 +198,12 @@ prunner () {
       JOB_QUEUE+=("$LINE")
     done <<< "$(cat /dev/stdin)"
   fi
+  # Add non-option arguments to queue
+  shift $(($OPTIND-1))
+  while [ $# -gt 0 ] ; do
+    JOB_QUEUE+=("$1")
+    shift
+  done
   local JOB_MAX="${#JOB_QUEUE[@]}"
   local JOB_INDEX=0
   local THREADS=${THREADS:-8}
