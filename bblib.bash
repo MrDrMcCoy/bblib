@@ -182,12 +182,6 @@ prunner () {
   local CURRENT_FUNC="prunner"
   local JOB_QUEUE=()
   local COMMAND=""
-  # Add input lines to queue, split by newlines
-  if [ ! -t 0 ] ; then
-    while read -r LINE ; do
-      JOB_QUEUE+=("$LINE")
-    done
-  fi
   # Process options
   while getopts ":c:t:" OPT ; do
     case ${OPT} in
@@ -197,6 +191,12 @@ prunner () {
       *) quit "ERROR" "Option '-${OPTARG}' is not defined." ;;
     esac
   done
+  # Add input lines to queue, split by newlines
+  if [ ! -t 0 ] ; then
+    while read -r LINE ; do
+      JOB_QUEUE+=("$LINE")
+    done
+  fi
   # Add non-option arguments to queue
   shift $(($OPTIND-1))
   for ARG in "$@" ; do
