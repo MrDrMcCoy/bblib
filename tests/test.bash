@@ -61,10 +61,10 @@ main () {
 
   # Generate test files
   log "DEBUG" "Generating test files"
+  RDATA="$(dd if=/dev/random bs=8k count=1 2> /dev/null)"
   for f in random{0..32}.out ; do
-    dd if=/dev/random bs=8k count=1 | base64 > $f &
+    base64 <<< "$RDATA" > $f
   done
-  wait
 
   # Parallel test
   log "DEBUG" "Test prunner gzipping the .out files"
