@@ -34,10 +34,8 @@ main () {
   example_function stuff things
   # Log a message that shows a variable
   log_debug "EXAMPLEVAR = ${EXAMPLEVAR}"
-  # Run the queued jobs from JOBQUEUE in parallel
-  prunner 'echo "Job ran in parallel with PID $BASHPID"' 'echo "Job ran in parallel with PID $BASHPID"'
   # Use find to create commands to run in parallel
-  find ./ -maxdepth 1 -type f -exec echo echo Found file {} \; | prunner
+  find ./ -maxdepth 1 -type f -exec echo Found file {} \; | prunner -c echo
   # ...
 }
 

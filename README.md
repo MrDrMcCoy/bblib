@@ -1,18 +1,18 @@
-# bash_template
+# bblib
 
-A starting point for well-written and reliable BASH scripts. The functions are documented in-line within `extlib.bash`, and a simple example that uses it is in `example.bash`.
+The _"Better BASH Library"_: A set of functions to assist with creating well-written and reliable BASH scripts. The functions are documented in-line within `bblib.bash`, and a simple example that uses it is in `example.bash`.
 
 ## Usage
 
 Add this to the top of your BASH script:
 
 ```bash
-source <(wget -qO- https://raw.githubusercontent.com/MrDrMcCoy/bash_template/master/extlib.bash)
+source <(wget -qO- https://raw.githubusercontent.com/MrDrMcCoy/bash_template/master/bblib.bash)
 ```
 
-Alternately, clone this repo locally and use `source` with the full path to `extlib.bash`.
+Alternately, clone this repo locally and use `source` with the full path to `bblib.bash`.
 
-Once `extlib.bash` is sourced in your script, you may refer to any of its supplied functions and/or replace them with your own.
+Once `bblib.bash` is sourced in your script, you may refer to any of its supplied functions and/or replace them with your own.
 
 ## General Info
 
@@ -27,36 +27,50 @@ Once `extlib.bash` is sourced in your script, you may refer to any of its suppli
 - `usage`
   - Description: Prints help and usage info
   - Usage: `usage`
-  - Notes: You should replace this with a similar function in your sourced conf file or in your main script.
+  - Notes: This is just an example. You should replace this with a similar function in your sourced conf file or in your main script.
 - `pprint`
   - Description: Properly line-wraps text that is piped in to it
-  - Usage: `command | pprint` or `pprint <<< "text"`
+  - Usage:
+    - `command | pprint`
+    - `pprint <<< "text"`
 - `inarray`
   - Description: Checks to see if a string is in an array and returns the index if true.
   - Usage: `inarray "${ARRAY[@]}" "SEARCHSTRING"`
 - `uc`
   - Description: Converts text to uppercase.
-  - Usage: `command | uc` or `uc "text"`
+  - Usage:
+    - `command | uc`
+    - `uc "text"`
 - `lc`
   - Description: Converts text to lowercase.
-  - Usage: `command | lc` or `lc "text"`
+  - Usage:
+    - `command | lc`
+    - `lc "text"`
 - `hr`
   - Description: Prints a horizontal rule.
-  - Usage: `hr` or `hr $CHARACTER`
+  - Usage:
+    - `hr`
+    - `hr $CHARACTER`
 - `log`
   - Description: Formats log messages and writes them to syslog, stderr, and a file.
-  - Usage: `command |& log "SEVERITY"` or `log "SEVERITY" "message"`
+  - Usage:
+    - `command |& log "SEVERITY"`
+    - `log "SEVERITY" "message"`
   - Aliases:
     - `log_debug` = `log "DEBUG"`
     - `log_info` = `log "INFO"`
+    - `log_note` = `log "NOTICE"`
     - `log_warn` = `log "WARN"`
     - `log_err` = `log "ERROR"`
+    - `log_crit` = `log "CRITICAL"`
+    - `log_alert` = `log "ALERT"`
+    - `log_emer` = `log "EMERGENCY"`
   - Notes:
     - This function depends on the `inarray` and `uc` functions.
     - Logging to file requires `$LOGFILE` to be set.
     - The default log level is _INFO_ if you do not define it.
     - The default severity is _NOTICE_ if you do not define it.
-    - Valid levels/severities are _EMERGENCY, ALERT, CRITICAL, ERROR, WARN, NOTICE, INFO, DEBUG_ as per `syslog`. Other severities will equate to NOTICE in `syslog`, but their text will be passed through.
+    - Valid levels/severities are _EMERGENCY, ALERT, CRITICAL, ERROR, WARN, NOTICE, INFO, DEBUG_ as per `syslog`. Other severities will numerically equate to NOTICE in `syslog`, but the text of the severity will be arbitrarily passed through.
 - `quit`
   - Description: Logs a message and exits
   - Usage: `quit "SEVERITY" "message"`
@@ -79,37 +93,65 @@ Once `extlib.bash` is sourced in your script, you may refer to any of its suppli
   - Notes: This function only works properly in Linux, as it depends on PROCFS.
 - `prunner`
   - Description: Executes commands in parallel.
-  - Usage: `prunner "command args" "command args"` or `command_generator | prunner`
+  - Usage:
+    - `prunner "command args" "command args"`
+    - `command_generator | prunner`
+    - `prunner -t 6 -c gzip FILE FILE FILE`
+    - `find . -type f | prunner -c "gzip -v" -t 8`
+  - Arguments:
+    - `-c`: Command to prepend to each job line. If you do `-c gzip` and pipe in or suffix `prunner` with more lines, the resulting background command will be `gzip $JOBLINE`.
+    - `-t`: Threads to use. Default is 8. You can alternately set the `THREADS` environment variable.
   - Notes: The number of jobs to run concurrently is controlled by the `THREADS` variable.
 
 ## Variables
 
 - `CURRENT_FUNC`
   - Description: Set this variable in each function to inform the logger which function is emitting the message.
+  - Used by: _everything_.
   - Default: 'SCRIPT_ROOT'
 - `FINALCMDS`
   - Description: Array containing commands to run on exit. Add actions to its list by running: `FINALCMDS+=("command arg arg")`
+  - Used by: `finally`.
   - Default: ()
 - `LOGLEVEL`
   - Description: Set this to determine the cutoff for logging severity according to the levels in `syslog`.
+  - Used by: `log`.
   - Notes: Valid levels are _EMERGENCY, ALERT, CRITICAL, ERROR, WARN, NOTICE, INFO, DEBUG_.
   - Default: 'INFO'
 - `LOGFILE`
   - Description: Set this to have `log` additionally output to a file.
+  - Used by: `log`.
   - Notes: This will capture debug output if BASH has `set -x`.
   - Default: _unset_
 - `PIDFILE`
-  - Description: The path to a file for tracking the PID of the script if you call `checkpid`.
+  - Description: The path to a file for tracking the PID of the script.
+  - Used by: `checkpid`.
   - Default: '${0}.pid'
 - `REQUIREUSER`
-  - Description: Variable to set the user that is allowed to run this script if you call `requireuser`.
+  - Description: Variable to set the user that is allowed to run this script.
+  - Used by: `requireuser`.
   - Default: _unset_
 - `SCRIPT_NAME`
   - Description: The name of the script that will appear in the header of all log lines.
+  - Used by: `log`.
   - Default: "${0}"
 - `THREADS`
   - Description: Integer to control the number of background jobs to allow at once.
+  - Used by: `prunner`.
   - Default: 8
+
+## Dependencies
+
+The commands that `bblib.bash` calls out to are listed here, in case you are on a system that does not have them:
+
+- `fold`
+  - Used by: `pprint`
+- `tr`
+  - Used by: `uc`, `lc`, `log`
+- `logger`
+  - Used by: `log`
+- `getopts`
+  - Used by: `argparser`
 
 ## Resources
 
