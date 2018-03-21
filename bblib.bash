@@ -167,7 +167,7 @@ argparser () {
       h) usage ;;
       s) source "${OPTARG}" ;;
       v) set -x ; LOGLEVEL=DEBUG ;;
-      :) quit "ERROR" "Option '-${OPT}' requires an argument. For usage, try '${0} -h'." ;;
+      :) quit "ERROR" "Option '-${OPTARG}' requires an argument. For usage, try '${0} -h'." ;;
       *) quit "ERROR" "Invalid option: '-${OPTARG}'. For usage, try '${0} -h'." ;;
     esac
   done
