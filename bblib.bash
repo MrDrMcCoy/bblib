@@ -216,6 +216,7 @@ prunner () {
       ((JOB_INDEX++))
     fi
   done
+  wait
   log "DEBUG" "Parallel execution finished for $JOB_MAX jobs."
 }
 
