@@ -183,6 +183,7 @@ prunner () {
   local JOB_QUEUE=()
   local COMMAND=""
   # Process options
+  set -x
   while getopts ":c:t:" OPT ; do
     case ${OPT} in
       c) local COMMAND="${OPTARG}" ; log "DEBUG" "COMMAND=$COMMAND" ;;
@@ -190,7 +191,8 @@ prunner () {
       :) quit "ERROR" "Option '-${OPTARG}' requires an argument." ;;
       *) quit "ERROR" "Option '-${OPTARG}' is not defined." ;;
     esac
-  done <<< "$@"
+  done
+  set +x
   # Add input lines to queue, split by newlines
   if [ ! -t 0 ] ; then
     while read -r LINE ; do
