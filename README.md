@@ -97,7 +97,7 @@ Once `bblib.bash` is sourced in your script, you may refer to any of its supplie
     - `prunner "command args" "command args"`
     - `command_generator | prunner`
     - `prunner -t 6 -c gzip FILE FILE FILE`
-    - `find . -type f | prunner -c gzip -t 8`
+    - `find . -type f | prunner -c "gzip -v" -t 8`
   - Arguments:
     - `-c`: Command to prepend to each job line. If you do `-c gzip` and pipe in or suffix `prunner` with more lines, the resulting background command will be `gzip $JOBLINE`.
     - `-t`: Threads to use. Default is 8. You can alternately set the `THREADS` environment variable.
