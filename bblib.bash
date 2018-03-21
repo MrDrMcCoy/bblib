@@ -185,8 +185,8 @@ prunner () {
   # Process options
   while getopts ":c:t:" OPT ; do
     case ${OPT} in
-      c) local COMMAND="${OPTARG}" ;;
-      t) local THREADS="${OPTARG}" ;;
+      c) local COMMAND="${OPTARG}" ; log "DEBUG" "COMMAND=$COMMAND" ;;
+      t) local THREADS="${OPTARG}" ; log "DEBUG" "THREADS=$THREADS" ;;
       :) quit "ERROR" "Option '-${OPTARG}' requires an argument." ;;
       *) quit "ERROR" "Option '-${OPTARG}' is not defined." ;;
     esac
@@ -206,8 +206,8 @@ prunner () {
   local JOB_INDEX=0
   local THREADS=${THREADS:-8}
   # Start running the commands in the queue
-  log "DEBUG" "Starting parallel execution of $JOB_MAX jobs with $THREADS threads."
-  until [ ${#JOB_QUEUE[@]} = 0 ] ; do
+  log "DEBUG" "Starting parallel execution of $JOB_MAX jobs with $THREADS threads using command prefix '$COMMAND'."
+  until [ ${#JOB_QUEUE[@]} == 0 ] ; do
     if [ "$(jobs -rp | wc -l)" -lt "${THREADS}" ] ; then
       log "DEBUG" "Starting command in parallel ($(($JOB_INDEX+1))/$JOB_MAX): ${COMMAND} ${JOB_QUEUE[$JOB_INDEX]}"
       eval "${COMMAND} ${JOB_QUEUE[$JOB_INDEX]}" |& log "DEBUG" || true &
