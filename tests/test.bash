@@ -58,18 +58,18 @@ main () {
   bash -c 'source ../bblib.bash ; source test.bash.conf ; requireuser n00b' || true
   log "DEBUG" "Test requireuser with current user"
   bash -c 'source ../bblib.bash ; source test.bash.conf ; requireuser "$USER"' || true
-  quit INFO "stopping here"
 
   # Generate test files
   log "DEBUG" "Generating test files"
-  for f in random{0..32} ; do
-    dd if=/dev/random bs=1M count=1 | base64 > $f.out &
+  for f in random{0..32}.out ; do
+    dd if=/dev/random bs=1M count=1 | base64 > $f &
   done
   wait
 
   # Parallel test
   log "DEBUG" "Test prunner gzipping the .out files"
-  prunner -c "gzip -v" *.out
+  prunner -c "gzip -vk" *.out
+  quit INFO "stopping here"
 
   # Add cleanup tasks
   #FINALCMDS+=('rm -v *.out')
