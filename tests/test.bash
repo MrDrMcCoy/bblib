@@ -62,7 +62,7 @@ main () {
   # Generate test files
   log "DEBUG" "Generating test files"
   for f in random{0..32}.out ; do
-    dd if=/dev/random bs=1M count=1 | base64 > $f &
+    dd if=/dev/random bs=8k count=1 | base64 > $f &
   done
   wait
 
