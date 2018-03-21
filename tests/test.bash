@@ -9,15 +9,15 @@ main () {
 
   # Test argparser
   log "DEBUG" "Test argparser -h"
-  bash -c 'source ../bblib.bash ; source test.conf ; argparser -h' || true
+  bash -c 'source ../bblib.bash ; source test.bash.conf ; argparser -h' || true
   log "DEBUG" "Test argparser -v"
-  bash -c 'source ../bblib.bash ; source test.conf ; argparser -v' || true
-  log "DEBUG" "Test argparser -s test.conf"
-  bash -c 'source ../bblib.bash ; source test.conf ; argparser -s test.conf' || true
+  bash -c 'source ../bblib.bash ; source test.bash.conf ; argparser -v' || true
+  log "DEBUG" "Test argparser -s test.bash.conf"
+  bash -c 'source ../bblib.bash ; source test.bash.conf ; argparser -s test.bash.conf' || true
   log "DEBUG" "Test argparser -s"
-  bash -c 'source ../bblib.bash ; source test.conf ; argparser -s' || true
+  bash -c 'source ../bblib.bash ; source test.bash.conf ; argparser -s' || true
   log "DEBUG" "Test argparser -y"
-  bash -c 'source ../bblib.bash ; source test.conf ; argparser -y' || true
+  bash -c 'source ../bblib.bash ; source test.bash.conf ; argparser -y' || true
 
   # Test hr
   log "DEBUG" "Test hr ="
@@ -47,17 +47,17 @@ main () {
   log "DEBUG" "Test checkpid"
   checkpid
   log "DEBUG" "Test checkpid in second shell"
-  bash -c 'source ../bblib.bash ; source test.conf ; checkpid' || true
+  bash -c 'source ../bblib.bash ; source test.bash.conf ; checkpid' || true
 
   # User check
   log "DEBUG" "Test requireuser with \$REQUIREUSER"
-  bash -c 'source ../bblib.bash ; source test.conf ; requireuser' || true
+  bash -c 'source ../bblib.bash ; source test.bash.conf ; requireuser' || true
   log "DEBUG" "Test requireuser without \$REQUIREUSER"
-  bash -c 'source ../bblib.bash ; source test.conf ; unset REQUIREUSER ; requireuser' || true
+  bash -c 'source ../bblib.bash ; source test.bash.conf ; unset REQUIREUSER ; requireuser' || true
   log "DEBUG" "Test requireuser n00b"
-  bash -c 'source ../bblib.bash ; source test.conf ; requireuser n00b' || true
+  bash -c 'source ../bblib.bash ; source test.bash.conf ; requireuser n00b' || true
   log "DEBUG" "Test requireuser with current user"
-  bash -c 'source ../bblib.bash ; source test.conf ; requireuser "$USER"' || true
+  bash -c 'source ../bblib.bash ; source test.bash.conf ; requireuser "$USER"' || true
 
   # Generate test files
   log "DEBUG" "Generating test files"
