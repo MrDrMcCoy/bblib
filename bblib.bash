@@ -4,6 +4,11 @@
 set -e
 set -o pipefail
 
+# If a .conf file exists for this script, source it
+if [ -f "${0}.conf" ] ; then
+  source "${0}.conf"
+fi
+
 # The FINALCMDS array needs to be defined before setting up finally
 FINALCMDS=()
 
