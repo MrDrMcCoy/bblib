@@ -29,15 +29,15 @@ main () {
   log "DEBUG" "Test uc"
   uc < lorem-ipsum.txt | pprint > lorem-ipsum-uc-pprint.out |& log "DEBUG"
 
-  # Test shorthand loggers
-  log_debug "shorthand test"
-  log_info "shorthand test"
-  log_note "shorthand test"
-  log_warn "shorthand test"
-  log_err "shorthand test"
-  log_crit "shorthand test"
-  log_alert "shorthand test"
-  log_emer "shorthand test"
+  # Test shorthand log log loggers
+  log_debug "shorthand log_debug test"
+  log_info "shorthand log_info test"
+  log_note "shorthand log_note test"
+  log_warn "shorthand log_warn test"
+  log_err "shorthand log_err test"
+  log_crit "shorthand log_crit test"
+  log_alert "shorthand log_alert test"
+  log_emer "shorthand log_emer test"
 
   # Test for bash 4
   log "DEBUG" "Test bash4check"

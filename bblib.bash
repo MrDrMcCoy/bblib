@@ -119,7 +119,7 @@ checkpid () {
   local PIDFILE="${PIDFILE:-${0}.pid}"
   if [ ! -d "/proc/$$" ]; then
     quit "ERROR" "This function requires procfs. Are you on Linux?"
-  elif [ "$(cat "${PIDFILE}")" != "$$" ] ; then
+  elif [ "$(cat "${PIDFILE}" 2> /dev/null)" != "$$" ] ; then
     quit "WARN" "This script is already running, exiting"
   else
     echo $$ > "${PIDFILE}"
