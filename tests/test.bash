@@ -71,8 +71,8 @@ main () {
   prunner -c "gzip -vk" *.out
 
   # Add cleanup tasks
-  FINALCMDS+=('rm -v *.out')
-  FINALCMDS+=('rm -v *.gz')
+  FINALCMDS+=('rm *.out')
+  FINALCMDS+=('rm *.gz')
 
   quit "INFO" "All tests finished."
 }
