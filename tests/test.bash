@@ -67,8 +67,10 @@ main () {
   done
 
   # Parallel test
-  log "DEBUG" "Test prunner gzipping the .out files"
-  prunner -c "gzip -k" *.out
+  log "DEBUG" "Test prunner gzipping the .out files with arguments for the jobs"
+  prunner -c "gzip -fk" *.out
+  log "DEBUG" "Test prunner gzipping the .out files with stdin for the jobs"
+  prunner -c "gzip -fk" <<< *.out
 
   # Add cleanup tasks
   FINALCMDS+=('rm *.out')
