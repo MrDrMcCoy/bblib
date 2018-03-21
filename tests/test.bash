@@ -2,6 +2,9 @@
 
 # Import bbblib
 source ../bblib.bash
+set -x
+source "${0}.conf"
+set +x
 
 main () {
   local CURRENT_FUNC="main"
