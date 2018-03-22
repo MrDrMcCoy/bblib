@@ -10,9 +10,9 @@ FINALCMDS=()
 pprint () {
   # Function to properly wrap and print text
   # Usage:
-  #   command | pprint
+  #   command | pprint [columns]
   #   pprint <<< "text"
-  local COLUMNS="${COLUMNS:-$(tput cols)}"
+  local COLUMNS="${1:-${COLUMNS:-$(tput cols)}}"
   fold -sw "${COLUMNS:-80}"
 }
 
@@ -35,12 +35,26 @@ inarray () {
   return 1
 }
 
-# Convert to uppercase
-uc () { tr "[:lower:]" "[:upper:]" <<< "${@:-$(cat /dev/stdin)}" ; }
-# Convert to lowercase
-lc () { tr "[:upper:]" "[:lower:]" <<< "${@:-$(cat /dev/stdin)}" ; }
-# Print horizontal rule
+lc () {
+  # Convert stdin/arguments to lowercase
+  # Usage:
+  #   lc [string]
+  #   command | lc
+  tr "[:upper:]" "[:lower:]" <<< "${@:-$(cat /dev/stdin)}"
+}
+
+uc () {
+  # Convert stdin/arguments to uppercase
+  # Usage:
+  #   uc [string]
+  #   command | uc
+  tr "[:lower:]" "[:upper:]" <<< "${@:-$(cat /dev/stdin)}"
+}
+
 hr () {
+  # Print horizontal rule
+  # Usage:
+  #   hr [character]
   local CHARACTER="${1:0:1}"
   local COLUMNS=${COLUMNS:-$(tput cols)}
   printf '%*s\n' "${COLUMNS:-80}" '' | tr ' ' "${CHARACTER:--}"
@@ -53,7 +67,6 @@ log () {
   #     log $SEVERITY $MESSAGE
   # Variables:
   #     LOGLEVEL: The cutoff for message severity to log (Default is INFO).
-  #####
   local SEVERITY="$(uc "${1:-NOTICE}")"
   local LOGMSG="${2:-$(cat /dev/stdin)}"
   local LOGLEVELS=(EMERGENCY ALERT CRITICAL ERROR WARN NOTICE INFO DEBUG)
@@ -61,7 +74,7 @@ log () {
   local LOGTAG="[${SCRIPT_NAME:-$0}] [${CURRENT_FUNC:-SCRIPT_ROOT}] [${SEVERITY}]"
   local NUMERIC_LOGLEVEL="$(inarray "${LOGLEVELS[@]}" "${LOGLEVEL}")"
   local NUMERIC_SEVERITY="$(inarray "${LOGLEVELS[@]}" "${SEVERITY}")"
-  #####
+
   if [ ${NUMERIC_SEVERITY:-5} -le ${NUMERIC_LOGLEVEL:-6} ] ; then
     while read -r LINE ; do
       logger -is -p user.${NUMERIC_SEVERITY:-5} -t "${LOGTAG} " -- "${LINE}"
@@ -94,6 +107,7 @@ quit () {
 
 bash4check () {
   # Call this function to enable features that depend on bash 4.0+.
+  # Usage: bash4check
   if [ ${BASH_VERSINFO[0]} -lt 4 ] ; then
     log "ERROR" "Sorry, you need at least bash version 4 to run this function: $CURRENT_FUNC"
     return 1
@@ -106,14 +120,15 @@ finally () {
   # Function to perform final tasks before exit
   local CURRENT_FUNC="finally"
   until [ "${#FINALCMDS[@]}" == 0 ] ; do
-      log "DEBUG" "Executing pre-exit command: ${FINALCMDS[-1]}"
-      eval "${FINALCMDS[-1]}"
-      unset FINALCMDS[-1]
+    log "DEBUG" "Executing pre-exit command: ${FINALCMDS[-1]}"
+    eval "${FINALCMDS[-1]}"
+    unset FINALCMDS[-1]
   done
 }
 
 checkpid () {
   # Check for and maintain pidfile
+  # Usage: checkpid
   local CURRENT_FUNC="checkpid"
   local PIDFILE="${PIDFILE:-${0}.pid}"
   if [ ! -d "/proc/$$" ]; then
@@ -165,7 +180,7 @@ argparser () {
     case ${OPT} in
       h) usage ;;
       s) source "${OPTARG}" ;;
-      v) set -x ; LOGLEVEL=DEBUG ;;
+      v) set -x ; export LOGLEVEL=DEBUG ;;
       :) quit "ERROR" "Option '-${OPTARG}' requires an argument. For usage, try '${0} -h'." ;;
       *) quit "ERROR" "Invalid option: '-${OPTARG}'. For usage, try '${0} -h'." ;;
     esac
@@ -183,6 +198,7 @@ prunner () {
   #   find . | prunner -c 'echo found file:' -t 6
   local CURRENT_FUNC="prunner"
   local PQUEUE=()
+  # Process option arguments
   while getopts ":c:t:" OPT ; do
     case ${OPT} in
       c) local PCMD="${OPTARG}" ;;
@@ -191,10 +207,13 @@ prunner () {
       *) quit "ERROR" "Option '-${OPTARG}' is not defined." ;;
     esac
   done
+  # Throw away option arguments so that non-option arguments can be queued
   shift $(($OPTIND-1))
+  # Add non-option arguments to queue
   for ARG in "$@" ; do
     PQUEUE+=("$ARG")
   done
+  # Add lines from stdin to queue
   if [ ! -t 0 ] ; then
     while read -r LINE ; do
       PQUEUE+=("$LINE")
