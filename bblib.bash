@@ -173,10 +173,8 @@ argparser () {
 }
 
 prunner () {
-  set -x
   local CURRENT_FUNC="prunner"
   local PQUEUE=()
-  echo "args=$@"
   while getopts ":c:t:" OPT ; do
     case ${OPT} in
       c) local PCMD="${OPTARG}" ;;
@@ -196,18 +194,17 @@ prunner () {
   fi
   local QCOUNT="${#PQUEUE[@]}"
   local INDEX=0
-  echo "Starting parallel execution of $QCOUNT jobs with ${THREADS:-8} threads using command prefix '$PCMD'."
+  log "INFO" "Starting parallel execution of $QCOUNT jobs with ${THREADS:-8} threads using command prefix '$PCMD'."
   until [ ${#PQUEUE[@]} == 0 ] ; do
     if [ "$(jobs -rp | wc -l)" -lt "${THREADS:-8}" ] ; then
-      echo "Starting command in parallel ($(($INDEX+1))/$QCOUNT): ${PCMD} ${PQUEUE[$INDEX]}"
-      eval "${PCMD} ${PQUEUE[$INDEX]}" || true &
+      log "DEBUG" "Starting command in parallel ($(($INDEX+1))/$QCOUNT): ${PCMD} ${PQUEUE[$INDEX]}"
+      eval "${PCMD} ${PQUEUE[$INDEX]}" |& log "DEBUG" || true &
       unset PQUEUE[$INDEX]
       ((INDEX++)) || true
     fi
   done
   wait
-  echo "Parallel execution finished for $QCOUNT jobs."
-  set +x
+  log "INFO" "Parallel execution finished for $QCOUNT jobs."
 }
 
 # Trap for killing runaway processes and exiting
