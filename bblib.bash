@@ -122,7 +122,7 @@ checkpid () {
     quit "WARN" "This script is already running with PID $(cat "${PIDFILE}" 2> /dev/null), exiting"
   else
     echo -n "$$" > "${PIDFILE}"
-    FINALCMDS+=("rm -v '${PIDFILE}'")
+    FINALCMDS+=("rm '${PIDFILE}'")
     log "DEBUG" "PID $$ has no conflicts and has been written to ${PIDFILE}"
   fi
 }
