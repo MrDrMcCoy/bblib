@@ -70,7 +70,7 @@ main () {
   log "DEBUG" "Test prunner gzipping the .out files with arguments for the jobs"
   prunner -c "gzip -fk" *.out
   log "DEBUG" "Test prunner echoing the .out files with stdin for the jobs"
-  find . -maxdepth 1 -type f -name "*.out" | prunner -c echo -t 18
+  find . -maxdepth 1 -type f -name "*.out" | prunner -c "echo" -t 6
 
   # Add cleanup tasks
   FINALCMDS+=('rm *.out')
@@ -79,6 +79,6 @@ main () {
   quit "INFO" "All tests finished."
 }
 
-main
+main "$@"
 
 quit "ERROR" "Script reached end unexpecedtly!"
