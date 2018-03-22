@@ -69,9 +69,8 @@ main () {
   # Parallel test
   log "DEBUG" "Test prunner gzipping the .out files with arguments for the jobs"
   prunner -c "gzip -fk" *.out
-  log "DEBUG" "Test prunner gzipping the .out files with stdin for the jobs"
-  find . -maxdepth 1 -type f | prunner -c "echo found file:" -t 18
-  #find . -maxdepth 1 -name "*.out" | prunner -c "gzip -fk"
+  log "DEBUG" "Test prunner echoing the .out files with stdin for the jobs"
+  find . -maxdepth 1 -type f -name "*.out" | prunner -c "echo found file:" -t 18
 
   # Add cleanup tasks
   FINALCMDS+=('rm *.out')
