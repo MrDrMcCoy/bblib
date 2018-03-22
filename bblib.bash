@@ -176,6 +176,7 @@ prunner () {
   set -x
   local CURRENT_FUNC="prunner"
   local PQUEUE=()
+  echo "args=$@"
   while getopts ":c:t:" OPT ; do
     case ${OPT} in
       c) local PCMD="${OPTARG}" ;;
