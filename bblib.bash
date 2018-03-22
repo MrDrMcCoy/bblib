@@ -180,14 +180,12 @@ prunner () {
   #   prunner -t 6 -c gzip FILE FILE FILE
   #   find . -type f | prunner -c gzip -t 8
   local CURRENT_FUNC="prunner"
-  local JOB_QUEUE=()
-  local COMMAND=""
+  local PQUEUE=()
   # Process options
-  echo "ARGS='$@'"
   while getopts ":c:t:" OPT ; do
     case ${OPT} in
-      c) COMMAND="${OPTARG}" ;;
-      t) THREADS="${OPTARG}" ;;
+      c) local PCMD="${OPTARG}" ;;
+      t) local THREADS="${OPTARG}" ;;
       :) quit "ERROR" "Option '-${OPTARG}' requires an argument." ;;
       *) quit "ERROR" "Option '-${OPTARG}' is not defined." ;;
     esac
@@ -195,29 +193,28 @@ prunner () {
   # Add input lines to queue, split by newlines
   if [ ! -t 0 ] ; then
     while read -r LINE ; do
-      JOB_QUEUE+=("$LINE")
+      PQUEUE+=("$LINE")
     done
   fi
   # Add non-option arguments to queue
   shift $(($OPTIND-1))
   for ARG in "$@" ; do
-    JOB_QUEUE+=("$ARG")
+    PQUEUE+=("$ARG")
   done
-  local JOB_MAX="${#JOB_QUEUE[@]}"
-  local JOB_INDEX=0
-  local THREADS=${THREADS:-8}
+  local QCOUNT="${#PQUEUE[@]}"
+  local INDEX=0
   # Start running the commands in the queue
-  log "DEBUG" "Starting parallel execution of $JOB_MAX jobs with $THREADS threads using command prefix '$COMMAND'."
-  until [ ${#JOB_QUEUE[@]} == 0 ] ; do
-    if [ "$(jobs -rp | wc -l)" -lt "${THREADS}" ] ; then
-      log "DEBUG" "Starting command in parallel ($(($JOB_INDEX+1))/$JOB_MAX): ${COMMAND} ${JOB_QUEUE[$JOB_INDEX]}"
-      eval "${COMMAND} ${JOB_QUEUE[$JOB_INDEX]}" |& log "DEBUG" || true &
-      unset JOB_QUEUE[$JOB_INDEX]
-      ((JOB_INDEX++)) || true # I have no idea why this needs '|| true', but it does and it works.
+  log "DEBUG" "Starting parallel execution of $QCOUNT jobs with ${THREADS:-8} threads using command prefix '$PCMD'."
+  until [ ${#PQUEUE[@]} == 0 ] ; do
+    if [ "$(jobs -rp | wc -l)" -lt "${THREADS:-8}" ] ; then
+      log "DEBUG" "Starting command in parallel ($(($INDEX+1))/$QCOUNT): ${PCMD} ${PQUEUE[$INDEX]}"
+      eval "${PCMD} ${PQUEUE[$INDEX]}" |& log "DEBUG" || true &
+      unset PQUEUE[$INDEX]
+      ((INDEX++)) || true # I have no idea why this needs '|| true', but it does and it works.
     fi
   done
   wait
-  log "DEBUG" "Parallel execution finished for $JOB_MAX jobs."
+  log "DEBUG" "Parallel execution finished for $QCOUNT jobs."
 }
 
 # Trap for killing runaway processes and exiting
