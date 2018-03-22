@@ -40,12 +40,12 @@ Once `bblib.bash` is sourced in your script, you may refer to any of its supplie
   - Description: Converts text to uppercase.
   - Usage:
     - `command | uc`
-    - `uc "text"`
+    - `uc [text]`
 - `lc`
   - Description: Converts text to lowercase.
   - Usage:
     - `command | lc`
-    - `lc "text"`
+    - `lc [text]`
 - `hr`
   - Description: Prints a horizontal rule.
   - Usage:
@@ -54,8 +54,8 @@ Once `bblib.bash` is sourced in your script, you may refer to any of its supplie
 - `log`
   - Description: Formats log messages and writes them to syslog, stderr, and a file.
   - Usage:
-    - `command |& log "SEVERITY"`
-    - `log "SEVERITY" "message"`
+    - `command |& log [severity]`
+    - `log [severity] [message]`
   - Aliases:
     - `log_debug` = `log "DEBUG"`
     - `log_info` = `log "INFO"`
@@ -73,14 +73,14 @@ Once `bblib.bash` is sourced in your script, you may refer to any of its supplie
     - Valid levels/severities are _EMERGENCY, ALERT, CRITICAL, ERROR, WARN, NOTICE, INFO, DEBUG_ as per `syslog`. Other severities will numerically equate to NOTICE in `syslog`, but the text of the severity will be arbitrarily passed through.
 - `quit`
   - Description: Logs a message and exits
-  - Usage: `quit "SEVERITY" "message"`
+  - Usage: `quit [severity] [message]`
 - `argparser`
   - Description: Parses flags passed on the command-line
   - Usage: `argparser "$@"`
   - Notes: This function is meant to be copied into your sourced conf file and modified to suit your script's needs.
 - `requireuser`
   - Description: Checks to see if the user running the script matches the desired username and exits on failure.
-  - Usage: `requireuser USER`
+  - Usage: `requireuser [user]`
 - `bash4check`
   - Description: Checks to see if you are on BASH 4.0 or above and exits if not.
   - Usage: Place `bash4check` at the beginning of any function that uses BASH 4+ features.
@@ -94,13 +94,14 @@ Once `bblib.bash` is sourced in your script, you may refer to any of its supplie
 - `prunner`
   - Description: Executes commands in parallel.
   - Usage:
-    - `prunner "command arg" "command"`
-    - `prunner -t 6 -c gzip *.txt`
+    - `prunner -t [threads] -c [command] [files...]`
+    - `prunner [commandline] [commandline...]`
+    - `commandline_generator | prunner`
     - `find . -name "*.txt" | prunner -c "gzip -v" -t 8`
   - Arguments:
-    - `-c`: Command to prepend to each job line. If you do `-c gzip` and pipe in or suffix `prunner` with more lines, the resulting background command will be `gzip $JOBLINE`.
+    - `-c`: Command to prepend to each job line. If you do `-c gzip` and pipe in to or suffix `prunner` with arguments, the resulting background command will be `gzip $JOBLINE`.
     - `-t`: Threads to use. Default is 8. You can alternately set the `THREADS` environment variable.
-  - Notes: The number of jobs to run concurrently is controlled by the `THREADS` variable.
+  - Notes: The number of jobs to run concurrently may also be set by the `THREADS` variable.
 
 ## Variables
 
@@ -143,14 +144,16 @@ Once `bblib.bash` is sourced in your script, you may refer to any of its supplie
 
 The commands that `bblib.bash` calls out to are listed here, in case you are on a system that does not have them:
 
+- `cat`
+  - Used by: `usage`
 - `fold`
   - Used by: `pprint`
-- `tr`
-  - Used by: `uc`, `lc`, `log`
 - `logger`
   - Used by: `log`
-- `getopts`
-  - Used by: `argparser`
+- `tee`
+  - Used by: `log`
+- `tr`
+  - Used by: `uc`, `lc`, `log`
 
 ## Resources
 
