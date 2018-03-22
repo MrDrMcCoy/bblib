@@ -180,9 +180,9 @@ prunner () {
   #   prunner -t 6 -c gzip FILE FILE FILE
   #   find . -type f | prunner -c gzip -t 8
   local CURRENT_FUNC="prunner"
-  local PQUEUE=()
   echo "args=$@"
   # Process options
+  set -x
   while getopts ":c:t:" OPT ; do
     case ${OPT} in
       c) local PCMD="${OPTARG}" ; echo "-c was set" ;;
@@ -191,7 +191,9 @@ prunner () {
       *) quit "ERROR" "Option '-${OPTARG}' is not defined." ;;
     esac
   done
+  set +x
   echo "PCMD='$PCMD' THREADS='$THREADS'"
+  local PQUEUE=()
   # Add input lines to queue, split by newlines
   if [ ! -t 0 ] ; then
     while read -r LINE ; do
