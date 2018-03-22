@@ -20,7 +20,7 @@ Once `bblib.bash` is sourced in your script, you may refer to any of its supplie
 - This library sets the shell to exit on the first error from a command or pipe. This ensures safer execution and better debugging.
 - The library will set a trap for SIGINT and SIGTERM to allow you to kill it should a command behave undesirably.
 - It will set an additional trap that runs on exit to assist with mandatory cleanup. See the `finally` function for more details.
-- When defining additional functions, be sure to add `local CURRENT_FUNC="function_name"` to the beginning so that the log function can include it in the output for easier degugging.
+- When defining additional functions, be sure to add `local CURRENT_FUNC="function_name"` to the beginning so that the log function can include it in the output for easier debugging.
 
 ## Function breakdown
 
