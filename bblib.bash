@@ -173,6 +173,8 @@ argparser () {
 }
 
 prunner () {
+  set -x
+  local CURRENT_FUNC="prunner"
   local PQUEUE=()
   while getopts ":c:t:" OPT ; do
     case ${OPT} in
@@ -204,6 +206,7 @@ prunner () {
   done
   wait
   echo "Parallel execution finished for $QCOUNT jobs."
+  set +x
 }
 
 # Trap for killing runaway processes and exiting
