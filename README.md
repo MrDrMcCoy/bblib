@@ -7,7 +7,7 @@ The _"Better BASH Library"_: A set of functions to assist with creating well-wri
 Add this to the top of your BASH script:
 
 ```bash
-source <(wget -qO- https://raw.githubusercontent.com/MrDrMcCoy/bblib/1.0.0/bblib.bash)
+source <(wget -qO- https://raw.githubusercontent.com/MrDrMcCoy/bblib/1.0.1/bblib.bash)
 ```
 
 Alternately, clone this repo locally and use `source` with the full path to `bblib.bash`.
@@ -29,10 +29,10 @@ Once `bblib.bash` is sourced in your script, you may refer to any of its supplie
   - Usage: `usage`
   - Notes: This is just an example. You should replace this with a similar function in your sourced conf file or in your main script.
 - `pprint`
-  - Description: Properly line-wraps text that is piped in to it
+  - Description: Properly line-wraps text that is piped in to it. It tries to auto-detect your terminal width, which can be set manually as the first argument, and has a hard fallback of 80.
   - Usage:
-    - `command | pprint`
-    - `pprint <<< "text"`
+    - `command | pprint [columns]`
+    - `pprint [columns] <<< "text"`
 - `inarray`
   - Description: Checks to see if a string is in an array and returns the index if true.
   - Usage: `inarray "${ARRAY[@]}" "SEARCHSTRING"`
@@ -94,10 +94,9 @@ Once `bblib.bash` is sourced in your script, you may refer to any of its supplie
 - `prunner`
   - Description: Executes commands in parallel.
   - Usage:
-    - `prunner "command args" "command args"`
-    - `command_generator | prunner`
-    - `prunner -t 6 -c gzip FILE FILE FILE`
-    - `find . -type f | prunner -c "gzip -v" -t 8`
+    - `prunner "command arg" "command"`
+    - `prunner -t 6 -c gzip *.txt`
+    - `find . -name "*.txt" | prunner -c "gzip -v" -t 8`
   - Arguments:
     - `-c`: Command to prepend to each job line. If you do `-c gzip` and pipe in or suffix `prunner` with more lines, the resulting background command will be `gzip $JOBLINE`.
     - `-t`: Threads to use. Default is 8. You can alternately set the `THREADS` environment variable.
