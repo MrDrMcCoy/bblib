@@ -181,15 +181,17 @@ prunner () {
   #   find . -type f | prunner -c gzip -t 8
   local CURRENT_FUNC="prunner"
   local PQUEUE=()
+  echo "args=$@"
   # Process options
   while getopts ":c:t:" OPT ; do
     case ${OPT} in
-      c) local PCMD="${OPTARG}" ;;
-      t) local THREADS="${OPTARG}" ;;
+      c) local PCMD="${OPTARG}" ; echo "-c was set" ;;
+      t) local THREADS="${OPTARG}" ; echo "-t was set" ;;
       :) quit "ERROR" "Option '-${OPTARG}' requires an argument." ;;
       *) quit "ERROR" "Option '-${OPTARG}' is not defined." ;;
     esac
   done
+  echo "PCMD='$PCMD' THREADS='$THREADS'"
   # Add input lines to queue, split by newlines
   if [ ! -t 0 ] ; then
     while read -r LINE ; do
@@ -203,6 +205,7 @@ prunner () {
   done
   local QCOUNT="${#PQUEUE[@]}"
   local INDEX=0
+  echo "PCMD='$PCMD' THREADS='$THREADS' QCOUNT='$QCOUNT'"
   # Start running the commands in the queue
   log "DEBUG" "Starting parallel execution of $QCOUNT jobs with ${THREADS:-8} threads using command prefix '$PCMD'."
   until [ ${#PQUEUE[@]} == 0 ] ; do
