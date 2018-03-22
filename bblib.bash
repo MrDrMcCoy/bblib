@@ -173,6 +173,14 @@ argparser () {
 }
 
 prunner () {
+  # Run commands in parallel
+  # Options:
+  #   -t [threads]
+  #   -c [command to pass arguments to]
+  # Usage:
+  #   prunner "command arg" "command"
+  #   prunner -c gzip *.txt
+  #   find . | prunner -c 'echo found file:' -t 6
   local CURRENT_FUNC="prunner"
   local PQUEUE=()
   while getopts ":c:t:" OPT ; do
