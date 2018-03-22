@@ -29,10 +29,10 @@ Once `bblib.bash` is sourced in your script, you may refer to any of its supplie
   - Usage: `usage`
   - Notes: This is just an example. You should replace this with a similar function in your sourced conf file or in your main script.
 - `pprint`
-  - Description: Properly line-wraps text that is piped in to it
+  - Description: Properly line-wraps text that is piped in to it. It tries to auto-detect your terminal width, which can be set manually as the first argument, and has a hard fallback of 80.
   - Usage:
-    - `command | pprint`
-    - `pprint <<< "text"`
+    - `command | pprint [columns]`
+    - `pprint [columns] <<< "text"`
 - `inarray`
   - Description: Checks to see if a string is in an array and returns the index if true.
   - Usage: `inarray "${ARRAY[@]}" "SEARCHSTRING"`
