@@ -70,7 +70,7 @@ main () {
   log "DEBUG" "Test prunner gzipping the .out files with arguments for the jobs"
   prunner -c "gzip -fk" *.out
   log "DEBUG" "Test prunner gzipping the .out files with stdin for the jobs"
-  find . -mindepth 1 -maxdepth 1 -name "*.out" | prunner -c "gzip -fk"
+  find . -maxdepth 1 -name "*.out" | prunner -c "gzip -fk"
 
   # Add cleanup tasks
   FINALCMDS+=('rm *.out')
