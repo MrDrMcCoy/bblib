@@ -145,6 +145,7 @@ checkpid () {
 requireuser () {
   # Checks to see if current user matches $REQUIREUSER and exits if not.
   # REQUIREUSER can be set as a variable or passed in as an argument.
+  # Usage: requireuser [user]
   local CURRENT_FUNC="requireuser"
   local REQUIREUSER="${1:-$REQUIREUSER}"
   if [ -z $REQUIREUSER ] ; then
@@ -157,6 +158,7 @@ requireuser () {
 }
 
 usage () {
+  # Print usage information
 pprint << HERE
 $0: An example script
 
@@ -182,7 +184,7 @@ argparser () {
       s) source "${OPTARG}" ;;
       v) set -x ; export LOGLEVEL=DEBUG ;;
       :) quit "ERROR" "Option '-${OPTARG}' requires an argument. For usage, try '${0} -h'." ;;
-      *) quit "ERROR" "Invalid option: '-${OPTARG}'. For usage, try '${0} -h'." ;;
+      *) quit "ERROR" "Option '-${OPTARG}' is not defined. For usage, try '${0} -h'." ;;
     esac
   done
 }
