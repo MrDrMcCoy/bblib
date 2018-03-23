@@ -21,9 +21,7 @@ inarray () {
   # It works by taking all passed variables and seeing if the last one matches any before it.
   # It will return 0 and print the array index that matches on success,
   # and return 1 with nothing printed on failure.
-  # Usage:
-  #   inarray "${ARRAY[@]}" [searchstring]
-  #####
+  # Usage: inarray "${ARRAY[@]}" [searchstring]
   local INDICIES=$#
   local SEARCH=${!INDICIES}
   for ((INDEX=1 ; INDEX < $# ; INDEX++)) {
@@ -66,6 +64,7 @@ log () {
   #   log [severity] [message]
   # Variables:
   #   LOGLEVEL: The cutoff for message severity to log (Default is INFO).
+  #   LOGFILE: Path to a log file to write messages to (Default is to skip file logging).
   local SEVERITY="$(uc "${1:-NOTICE}")"
   local LOGMSG="${2:-$(cat /dev/stdin)}"
   local LOGLEVELS=(EMERGENCY ALERT CRITICAL ERROR WARN NOTICE INFO DEBUG)
@@ -98,7 +97,7 @@ log_emer () { log "EMERGENCY" "$*" ; }
 
 quit () {
   # Function to log a message and exit
-  # Usage: quit $SEVERITY $MESSAGE $EXITCODE
+  # Usage: quit [severity] [message] [exitcode]
   log "${1:-WARN}" "${2:-Exiting without reason}"
   exit "${3:-3}"
 }
@@ -116,6 +115,7 @@ bash4check () {
 
 finally () {
   # Function to perform final tasks before exit
+  # Usage: FINALCMDS+=("command arg")
   local CURRENT_FUNC="finally"
   until [ "${#FINALCMDS[@]}" == 0 ] ; do
     log "DEBUG" "Executing pre-exit command: ${FINALCMDS[-1]}"
@@ -157,6 +157,7 @@ requireuser () {
 
 usage () {
 # Print usage information
+# Usage: usage
 pprint << HERE
 $0: An example script
 
@@ -172,8 +173,7 @@ HERE
 
 argparser () {
   # Accept command-line arguments
-  # Usage:
-  #   argparser "$@"
+  # Usage: argparser "$@"
   local CURRENT_FUNC="argparser"
   local OPT=
   local OPTARG=
