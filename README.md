@@ -163,3 +163,4 @@ If you would like to extend this library, some resources for advanced usage are 
 - The Advanced BASH guide: <http://tldp.org/LDP/abs/html/>
 - The BASH Hackers Wiki has great advanced usage description and examples for BASH: <http://wiki.bash-hackers.org/>
 - BASH Style Guide: <https://google.github.io/styleguide/shell.xml>
+- A very good `getopts` tutorial: <https://sookocheff.com/post/bash/parsing-bash-script-arguments-with-shopts/>

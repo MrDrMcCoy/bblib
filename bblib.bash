@@ -22,7 +22,7 @@ inarray () {
   # It will return 0 and print the array index that matches on success,
   # and return 1 with nothing printed on failure.
   # Usage:
-  #   inarray "${ARRAY[@]}" "SEARCHSTRING"
+  #   inarray "${ARRAY[@]}" [searchstring]
   #####
   local INDICIES=$#
   local SEARCH=${!INDICIES}
@@ -53,8 +53,7 @@ uc () {
 
 hr () {
   # Print horizontal rule
-  # Usage:
-  #   hr [character]
+  # Usage: hr [character]
   local CHARACTER="${1:0:1}"
   local COLUMNS=${COLUMNS:-$(tput cols)}
   printf '%*s\n' "${COLUMNS:-80}" '' | tr ' ' "${CHARACTER:--}"
@@ -63,10 +62,10 @@ hr () {
 log () {
   # Function to send log output to file, syslog, and stderr
   # Usage:
-  #     command |& log $SEVERITY
-  #     log $SEVERITY $MESSAGE
+  #   command |& log [severity]
+  #   log [severity] [message]
   # Variables:
-  #     LOGLEVEL: The cutoff for message severity to log (Default is INFO).
+  #   LOGLEVEL: The cutoff for message severity to log (Default is INFO).
   local SEVERITY="$(uc "${1:-NOTICE}")"
   local LOGMSG="${2:-$(cat /dev/stdin)}"
   local LOGLEVELS=(EMERGENCY ALERT CRITICAL ERROR WARN NOTICE INFO DEBUG)
@@ -99,8 +98,7 @@ log_emer () { log "EMERGENCY" "$*" ; }
 
 quit () {
   # Function to log a message and exit
-  # Usage:
-  #    quit $SEVERITY $MESSAGE $EXITCODE
+  # Usage: quit $SEVERITY $MESSAGE $EXITCODE
   log "${1:-WARN}" "${2:-Exiting without reason}"
   exit "${3:-3}"
 }
@@ -158,7 +156,7 @@ requireuser () {
 }
 
 usage () {
-  # Print usage information
+# Print usage information
 pprint << HERE
 $0: An example script
 
@@ -176,7 +174,6 @@ argparser () {
   # Accept command-line arguments
   # Usage:
   #   argparser "$@"
-  # More info here: http://wiki.bash-hackers.org/howto/getopts_tutorial
   local CURRENT_FUNC="argparser"
   local OPT=
   local OPTARG=
@@ -200,7 +197,7 @@ prunner () {
   # Usage:
   #   prunner "command arg" "command"
   #   prunner -c gzip *.txt
-  #   find . | prunner -c 'echo found file:' -t 6
+  #   find . -maxdepth 1 | prunner -c 'echo found file:' -t 6
   local CURRENT_FUNC="prunner"
   local PQUEUE=()
   # Process option arguments
