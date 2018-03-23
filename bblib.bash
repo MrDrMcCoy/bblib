@@ -178,6 +178,9 @@ argparser () {
   #   argparser "$@"
   # More info here: http://wiki.bash-hackers.org/howto/getopts_tutorial
   local CURRENT_FUNC="argparser"
+  local OPT=
+  local OPTARG=
+  local OPTIND=
   while getopts ":s:hv" OPT ; do
     case ${OPT} in
       h) usage ;;
@@ -201,6 +204,9 @@ prunner () {
   local CURRENT_FUNC="prunner"
   local PQUEUE=()
   # Process option arguments
+  local OPT=
+  local OPTARG=
+  local OPTIND=
   while getopts ":c:t:" OPT ; do
     case ${OPT} in
       c) local PCMD="${OPTARG}" ;;
