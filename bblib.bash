@@ -142,7 +142,7 @@ log_emer () { log "EMERGENCY" "$*" ; }
 quit () {
   # Function to log a message and exit
   # Usage: quit [severity] [message] [exitcode]
-  log "${1:-WARN}" "${2:-Exiting without reason}"
+  log "${1:-CRITICAL}" "${2:-Exiting without reason}"
   exit "${3:-3}"
 }
 
