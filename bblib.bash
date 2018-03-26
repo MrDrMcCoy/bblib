@@ -3,17 +3,44 @@
 # Scripts should fail on all logic errors, as we don't want to let them run amok
 set -e
 set -o pipefail
+set -o functrace
+set -o nounset
+set -o errexit
 
 # The FINALCMDS array needs to be defined before setting up finally
 FINALCMDS=()
+# Array to store command history within the script
+LOCAL_HISTORY=()
 
 pprint () {
-  # Function to properly wrap and print text
+  # Function to format, line wrap, and print piped text
+  # Options:
+  #   [0-7]|[COLOR]: Prints the ASCII escape code to set color.
+  #   [bold]: Prints the ASCII escape code to set bold.
+  #   [underline]: Prints the ASCII escape code to set underline.
+  #   More info here: http://www.tldp.org/HOWTO/Bash-Prompt-HOWTO/x405.html
   # Usage:
-  #   command | pprint [columns]
-  #   pprint <<< "text"
-  local COLUMNS="${1:-${COLUMNS:-$(tput cols)}}"
+  #   command | pprint [options]
+  #   pprint [options] <<< "text"
+  local COLUMNS="${COLUMNS:-$(tput cols)}"
+  while (($#)) ; do
+    case "$1" in
+      0|black) tput setaf 0 ;;
+      1|red) tput setaf 1 ;;
+      2|green) tput setaf 2 ;;
+      3|yellow) tput setaf 3 ;;
+      4|blue) tput setaf 4 ;;
+      5|magenta) tput setaf 5 ;;
+      6|cyan) tput setaf 6 ;;
+      7|white) tput setaf 7 ;;
+      8|bold) tput bold ;;
+      9|underline) tput smul ;;
+      *) quit "CRITICAL" "Option '$1' is not defined." ;;
+    esac
+    shift
+  done
   fold -sw "${COLUMNS:-80}"
+  tput sgr0
 }
 
 inarray () {
@@ -65,23 +92,40 @@ log () {
   # Variables:
   #   LOGLEVEL: The cutoff for message severity to log (Default is INFO).
   #   LOGFILE: Path to a log file to write messages to (Default is to skip file logging).
+  #   TRACEDEPTH: Sets how many function levels above this one to start a stack trace (Default is 1).
+  local TRACEDEPTH=${TRACEDEPTH:-1} # 0 would be this function, which is not useful
+  case "${FUNCNAME[$TRACEDEPTH]}" in
+    # If the function calling the logger is any of these, we want to find what called them
+    bash4check|quit) ((TRACEDEPTH++)) ;;
+  esac
   local SEVERITY="$(uc "${1:-NOTICE}")"
   local LOGMSG="${2:-$(cat /dev/stdin)}"
   local LOGLEVELS=(EMERGENCY ALERT CRITICAL ERROR WARN NOTICE INFO DEBUG)
+  local LOGCOLORS=("red bold underline" "red bold" "red underline" "red" "magenta" "cyan" "white" "yellow")
   local LOGLEVEL="$(uc "${LOGLEVEL:-INFO}")"
-  local LOGTAG="[${SCRIPT_NAME:-$0}] [${CURRENT_FUNC:-SCRIPT_ROOT}] [${SEVERITY}]"
+  local LOGTAG="${SCRIPT_NAME:-$(basename "$0")} [${FUNCNAME[$TRACEDEPTH]}]"
   local NUMERIC_LOGLEVEL="$(inarray "${LOGLEVELS[@]}" "${LOGLEVEL}")"
+  local NUMERIC_LOGLEVEL="${NUMERIC_LOGLEVEL:-6}"
   local NUMERIC_SEVERITY="$(inarray "${LOGLEVELS[@]}" "${SEVERITY}")"
-
-  if [ ${NUMERIC_SEVERITY:-5} -le ${NUMERIC_LOGLEVEL:-6} ] ; then
+  local NUMERIC_SEVERITY="${NUMERIC_SEVERITY:-5}"
+  local n=$'\n'
+  # If EMERGENCY, ALERT, CRITICAL, or DEBUG, append stack trace to LOGMSG
+  if [ "$SEVERITY" == "DEBUG" ] || [ ${NUMERIC_SEVERITY} -le 2 ] ; then
+    LOGMSG+="${n}[${FUNCNAME[$TRACEDEPTH]}:stacktrace] Previous command: ${LOCAL_HISTORY[@]:$((${#LOCAL_HISTORY[@]}-20)):1}"
+    for (( i = $TRACEDEPTH; i < ${#FUNCNAME[@]}; i++ )) ; do
+      LOGMSG+="${n}[${FUNCNAME[$i]}:stacktrace] ${BASH_SOURCE[$i]}:${BASH_LINENO[$i-1]}"
+    done
+  fi
+  # Split lines of message and log them
+  if [ ${NUMERIC_SEVERITY} -le ${NUMERIC_LOGLEVEL} ] ; then
     while read -r LINE ; do
-      logger -is -p user.${NUMERIC_SEVERITY:-5} -t "${LOGTAG} " -- "${LINE}"
+      logger -s -p user.${NUMERIC_SEVERITY} -t "${LOGTAG} " -- "${LINE}"
     done <<< "${LOGMSG}" |& \
-    if [ -n "${LOGFILE}" ] ; then
-      tee -a "${LOGFILE}"
-    else
-      cat /dev/stdin
-    fi
+      if [ -n "${LOGFILE}" ] ; then
+        tee -a "${LOGFILE}" | pprint ${LOGCOLORS[$NUMERIC_SEVERITY]}
+      elif [ ! -t 0 ]; then
+        pprint ${LOGCOLORS[$NUMERIC_SEVERITY]} < /dev/stdin
+      fi
   fi 1>&2
 }
 
@@ -106,7 +150,7 @@ bash4check () {
   # Call this function to enable features that depend on bash 4.0+.
   # Usage: bash4check
   if [ ${BASH_VERSINFO[0]} -lt 4 ] ; then
-    log "ERROR" "Sorry, you need at least bash version 4 to run this function: $CURRENT_FUNC"
+    log "ERROR" "Sorry, you need at least bash version 4 to run this function: ${FUNCNAME[1]}"
     return 1
   else
     log "DEBUG" "This script is safe to enable BASH version 4 features"
@@ -116,7 +160,6 @@ bash4check () {
 finally () {
   # Function to perform final tasks before exit
   # Usage: FINALCMDS+=("command arg")
-  local CURRENT_FUNC="finally"
   until [ "${#FINALCMDS[@]}" == 0 ] ; do
     log "DEBUG" "Executing pre-exit command: ${FINALCMDS[-1]}"
     eval "${FINALCMDS[-1]}"
@@ -127,7 +170,6 @@ finally () {
 checkpid () {
   # Check for and maintain pidfile
   # Usage: checkpid
-  local CURRENT_FUNC="checkpid"
   local PIDFILE="${PIDFILE:-${0}.pid}"
   if [ ! -d "/proc/$$" ]; then
     quit "ERROR" "This function requires procfs. Are you on Linux?"
@@ -144,7 +186,6 @@ requireuser () {
   # Checks to see if current user matches $REQUIREUSER and exits if not.
   # REQUIREUSER can be set as a variable or passed in as an argument.
   # Usage: requireuser [user]
-  local CURRENT_FUNC="requireuser"
   local REQUIREUSER="${1:-$REQUIREUSER}"
   if [ -z $REQUIREUSER ] ; then
     quit "ERROR" "requireuser was called, but \$REQUIREUSER is not set"
@@ -174,7 +215,6 @@ HERE
 argparser () {
   # Accept command-line arguments
   # Usage: argparser "$@"
-  local CURRENT_FUNC="argparser"
   local OPT=
   local OPTARG=
   local OPTIND=
@@ -198,7 +238,6 @@ prunner () {
   #   prunner "command arg" "command"
   #   prunner -c gzip *.txt
   #   find . -maxdepth 1 | prunner -c 'echo found file:' -t 6
-  local CURRENT_FUNC="prunner"
   local PQUEUE=()
   # Process option arguments
   local OPT=
@@ -244,6 +283,9 @@ trap "quit 'ALERT' 'Exiting on signal' '3'" SIGINT SIGTERM
 
 # Trap to do final tasks before exit
 trap finally EXIT
+
+# Trap to capture history within this script for debugging
+trap 'LOCAL_HISTORY+=("$BASH_COMMAND")' DEBUG
 
 # If a .conf file exists for this script, source it
 if [ -f "${0}.conf" ] ; then
