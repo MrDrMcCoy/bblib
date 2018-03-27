@@ -214,6 +214,7 @@ argparser () {
   local OPT=
   local OPTARG=
   local OPTIND=
+  [ -n "$*" ] || quit "ERROR" "No arguments were passed."
   while getopts ":s:hv" OPT ; do
     case ${OPT} in
       h) usage ;;

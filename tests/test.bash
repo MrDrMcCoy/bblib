@@ -9,6 +9,8 @@ main () {
   log "INFO" "Starting tests"
 
   # Test argparser
+  log "INFO" "Test argparser with no options"
+  bash -c 'source ../bblib.bash ; source test.bash.conf ; argparser' || true
   log "INFO" "Test argparser -h"
   bash -c 'source ../bblib.bash ; source test.bash.conf ; argparser -h' || true
   log "INFO" "Test argparser -v"
