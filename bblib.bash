@@ -96,10 +96,9 @@ log () {
   local LOGMSG="${2:-$(cat /dev/stdin)}"
   [ -n "$LOGMSG" ] || return 0
   local -i TRACEDEPTH=${TRACEDEPTH:-1} # 0 would be this function, which is not useful
-  case "${FUNCNAME[$TRACEDEPTH]}" in
-    # If the function calling the logger is any of these, we want to find what called them
-    bash4check|quit|log) ((TRACEDEPTH++)) ;;
-  esac
+  until [[ ! "${FUNCNAME[$TRACEDEPTH]}" =~ bash4check|quit|log|local ]] ; do
+    ((TRACEDEPTH++))
+  done
   local LOGTAG="${SCRIPT_NAME:-$(basename "$0")} [${FUNCNAME[$TRACEDEPTH]}]"
   local -a LOGLEVELS=(EMERGENCY ALERT CRITICAL ERROR WARN NOTICE INFO DEBUG)
   local -a LOGCOLORS=("red bold underline" "red bold" "red underline" "red" "magenta" "cyan" "white" "yellow")
@@ -110,7 +109,7 @@ log () {
   local -i NUMERIC_SEVERITY="${NUMERIC_SEVERITY:-5}"
   # If EMERGENCY, ALERT, CRITICAL, or DEBUG, append stack trace to LOGMSG
   if [ "$SEVERITY" == "DEBUG" ] || [ "${NUMERIC_SEVERITY}" -le 2 ] ; then
-    LOGMSG+=" stacktrace[$BASHPID]: " #[Command: ${LOCAL_HISTORY[-18]}]"
+    [ "$SEVERITY" != "DEBUG" ] || LOGMSG+=" $(eval echo "Command: ${LOCAL_HISTORY[-20]}")"
     for (( i = TRACEDEPTH; i < ${#FUNCNAME[@]}; i++ )) ; do
       LOGMSG+=" [${BASH_SOURCE[$i]}:${FUNCNAME[$i]}:${BASH_LINENO[$i-1]}]"
     done
@@ -272,7 +271,7 @@ prunner () {
 trap "quit 'ALERT' 'Exiting on signal' '3'" SIGINT SIGTERM
 
 # Trap to capture errors
-trap 'quit "ALERT" "Command failed with exit code $?: [$BASH_COMMAND]" "$?"' ERR
+trap 'quit "ALERT" "Command failed with exit code $?: $BASH_COMMAND" "$?"' ERR
 
 # Trap to do final tasks before exit
 trap finally EXIT
