@@ -96,7 +96,8 @@ log () {
   local LOGMSG="${2:-$(cat /dev/stdin)}"
   [ -n "$LOGMSG" ] || return 0
   local -i TRACEDEPTH=${TRACEDEPTH:-1} # 0 would be this function, which is not useful
-  until [[ ! "${FUNCNAME[$TRACEDEPTH]}" =~ bash4check|quit|log|local ]] ; do
+  until [[ ! "${FUNCNAME[$TRACEDEPTH]}" =~ bash4check|quit|log ]] ; do
+    # We want to look above these functions as well
     ((TRACEDEPTH++))
   done
   local LOGTAG="${SCRIPT_NAME:-$(basename "$0")} [${FUNCNAME[$TRACEDEPTH]}]"
@@ -109,6 +110,7 @@ log () {
   local -i NUMERIC_SEVERITY="${NUMERIC_SEVERITY:-5}"
   # If EMERGENCY, ALERT, CRITICAL, or DEBUG, append stack trace to LOGMSG
   if [ "$SEVERITY" == "DEBUG" ] || [ "${NUMERIC_SEVERITY}" -le 2 ] ; then
+    # If DEBUG, include the command that was run
     [ "$SEVERITY" != "DEBUG" ] || LOGMSG+=" $(eval echo "Command: ${LOCAL_HISTORY[-20]}")"
     for (( i = TRACEDEPTH; i < ${#FUNCNAME[@]}; i++ )) ; do
       LOGMSG+=" [${BASH_SOURCE[$i]}:${FUNCNAME[$i]}:${BASH_LINENO[$i-1]}]"
