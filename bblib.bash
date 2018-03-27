@@ -148,8 +148,7 @@ bash4check () {
   # Call this function to enable features that depend on bash 4.0+.
   # Usage: bash4check
   if [ "${BASH_VERSINFO[0]}" -lt 4 ] ; then
-    log "ERROR" "Sorry, you need at least bash version 4 to run this function: ${FUNCNAME[1]}"
-    return 1
+    quit "ALERT" "Sorry, you need at least bash version 4 to run this function: ${FUNCNAME[1]}"
   else
     log "DEBUG" "This script is safe to enable BASH version 4 features"
   fi
@@ -159,7 +158,7 @@ finally () {
   # Function to perform final tasks before exit
   # Usage: FINALCMDS+=("command arg")
   until [ "${#FINALCMDS[@]}" == 0 ] ; do
-    ${FINALCMDS[-1]} |& log "DEBUG"
+    ${FINALCMDS[-1]} 2> >(log "ERROR") | log "DEBUG"
     unset "FINALCMDS[-1]"
   done
 }
@@ -256,17 +255,14 @@ prunner () {
   fi
   local -i QCOUNT="${#PQUEUE[@]}"
   local -i INDEX=0
-  log "INFO" "Starting parallel execution of $QCOUNT jobs with ${THREADS:-8} threads using command prefix '$PCMD'."
   until [ ${#PQUEUE[@]} == 0 ] ; do
     if [ "$(jobs -rp | wc -l)" -lt "${THREADS:-8}" ] ; then
-      log "NOTICE" "Starting command in parallel ($((INDEX+1))/$QCOUNT): ${PCMD} ${PQUEUE[$INDEX]}"
-      ${PCMD} ${PQUEUE[$INDEX]} 2> >(log "ERROR") | log "DEBUG" || true &
+      ${PCMD} ${PQUEUE[$INDEX]} 2> >(log "ERROR") | log "DEBUG" &
       unset "PQUEUE[$INDEX]"
       ((INDEX++)) || true
     fi
   done
   wait
-  log "INFO" "Parallel execution finished for $QCOUNT jobs."
 }
 
 # Trap for killing runaway processes and exiting
