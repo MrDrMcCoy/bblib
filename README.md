@@ -7,7 +7,7 @@ The _"Better BASH Library"_: A set of functions to assist with creating well-wri
 Add this to the top of your BASH script:
 
 ```bash
-source <(wget -qO- https://raw.githubusercontent.com/MrDrMcCoy/bblib/1.1.0/bblib.bash)
+source <(wget -qO- https://raw.githubusercontent.com/MrDrMcCoy/bblib/1.1.1/bblib.bash)
 ```
 
 Alternately, clone this repo locally and use `source` with the full path to `bblib.bash`.
@@ -78,11 +78,11 @@ Once `bblib.bash` is sourced in your script, you may refer to any of its supplie
     - Logging to file requires `$LOGFILE` to be set.
     - The default log level is _INFO_ if you do not define it.
     - The default severity is _NOTICE_ if you do not define it.
-    - Valid levels/severities are _EMERGENCY, ALERT, CRITICAL, ERROR, WARN, NOTICE, INFO, DEBUG_ as per `syslog`. Other severities will numerically equate to NOTICE in `syslog`, but the text of the severity will be arbitrarily passed through.
+    - Valid levels/severities are _EMERGENCY, ALERT, CRITICAL, ERROR, WARN, NOTICE, INFO, DEBUG_ as per `syslog`. Other severities will numerically equate to NOTICE in `syslog`.
     - All interactive output is color-coded via pprint.
 - `quit`
   - Description: Logs a message and exits
-  - Usage: `quit [severity] [message]`
+  - Usage: `quit [severity] [message] [exitcode]`
 - `argparser`
   - Description: Parses flags passed on the command-line
   - Usage: `argparser "$@"`

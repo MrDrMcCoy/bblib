@@ -9,6 +9,8 @@ main () {
   log "INFO" "Starting tests"
 
   # Test argparser
+  log "INFO" "Test argparser with no options"
+  bash -c 'source ../bblib.bash ; source test.bash.conf ; argparser' || true
   log "INFO" "Test argparser -h"
   bash -c 'source ../bblib.bash ; source test.bash.conf ; argparser -h' || true
   log "INFO" "Test argparser -v"
@@ -46,7 +48,7 @@ main () {
 
   # Pid check
   log "INFO" "Test checkpid"
-  checkpid
+  #checkpid
   log "INFO" "Test checkpid in second shell"
   bash -c 'source ../bblib.bash ; checkpid' || true
 
@@ -69,15 +71,15 @@ main () {
 
   # Parallel test
   log "INFO" "Test prunner gzipping the .out files with arguments for the jobs"
-  prunner -c "gzip -fk" *.out
+  prunner -c "gzip -fk" *.out false
   log "INFO" "Test prunner echoing the .out files with stdin for the jobs"
-  find . -maxdepth 1 -type f -name "*.out" | prunner -c "echo" -t 6
+  find . -maxdepth 1 -type f -name "*.out" | head -n5 | prunner -c "echo found file " -t 6
 
   # Add cleanup tasks
   FINALCMDS+=('rm *.out')
   FINALCMDS+=('rm *.gz')
 
-  quit "INFO" "All tests finished."
+  false
 }
 
 main "$@"
