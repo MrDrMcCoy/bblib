@@ -7,7 +7,7 @@ The _"Better BASH Library"_: A set of functions to assist with creating well-wri
 Add this to the top of your BASH script:
 
 ```bash
-source <(wget -qO- https://raw.githubusercontent.com/MrDrMcCoy/bblib/1.1.1/bblib.bash)
+source <(wget -qO- https://raw.githubusercontent.com/MrDrMcCoy/bblib/1.1.2/bblib.bash)
 ```
 
 Alternately, clone this repo locally and use `source` with the full path to `bblib.bash`.
