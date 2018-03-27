@@ -82,7 +82,7 @@ Once `bblib.bash` is sourced in your script, you may refer to any of its supplie
     - All interactive output is color-coded via pprint.
 - `quit`
   - Description: Logs a message and exits
-  - Usage: `quit [severity] [message]`
+  - Usage: `quit [severity] [message] [exitcode]`
 - `argparser`
   - Description: Parses flags passed on the command-line
   - Usage: `argparser "$@"`

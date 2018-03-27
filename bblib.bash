@@ -1,11 +1,10 @@
 #!/bin/bash
 
 # Scripts should fail on all logic errors, as we don't want to let them run amok
-set -e
 set -o pipefail
 set -o functrace
+set -o errtrace
 set -o nounset
-set -o errexit
 
 # The FINALCMDS array needs to be defined before setting up finally
 FINALCMDS=()
@@ -22,25 +21,25 @@ pprint () {
   # Usage:
   #   command | pprint [options]
   #   pprint [options] <<< "text"
-  local COLUMNS="${COLUMNS:-$(tput cols)}"
+  local -i COLUMNS="${COLUMNS:-$(tput cols)}"
+  local PREFIX=
   while (($#)) ; do
     case "$1" in
-      0|black) tput setaf 0 ;;
-      1|red) tput setaf 1 ;;
-      2|green) tput setaf 2 ;;
-      3|yellow) tput setaf 3 ;;
-      4|blue) tput setaf 4 ;;
-      5|magenta) tput setaf 5 ;;
-      6|cyan) tput setaf 6 ;;
-      7|white) tput setaf 7 ;;
-      8|bold) tput bold ;;
-      9|underline) tput smul ;;
+      0|black) PREFIX+="$(tput setaf 0)" ;;
+      1|red) PREFIX+="$(tput setaf 1)" ;;
+      2|green) PREFIX+="$(tput setaf 2)" ;;
+      3|yellow) PREFIX+="$(tput setaf 3)" ;;
+      4|blue) PREFIX+="$(tput setaf 4)" ;;
+      5|magenta) PREFIX+="$(tput setaf 5)" ;;
+      6|cyan) PREFIX+="$(tput setaf 6)" ;;
+      7|white) PREFIX+="$(tput setaf 7)" ;;
+      8|bold) PREFIX+="$(tput bold)" ;;
+      9|underline) PREFIX+="$(tput smul)" ;;
       *) quit "CRITICAL" "Option '$1' is not defined." ;;
     esac
     shift
   done
-  fold -sw "${COLUMNS:-80}"
-  tput sgr0
+  fold -sw "${COLUMNS:-80}" <<< "${PREFIX}$(cat /dev/stdin)$(tput sgr0)"
 }
 
 inarray () {
@@ -49,7 +48,7 @@ inarray () {
   # It will return 0 and print the array index that matches on success,
   # and return 1 with nothing printed on failure.
   # Usage: inarray "${ARRAY[@]}" [searchstring]
-  local INDICIES=$#
+  local -i INDICIES=$#
   local SEARCH=${!INDICIES}
   for ((INDEX=1 ; INDEX < $# ; INDEX++)) {
     if [ "${!INDEX}" == "${SEARCH}" ]; then
@@ -80,7 +79,7 @@ hr () {
   # Print horizontal rule
   # Usage: hr [character]
   local CHARACTER="${1:0:1}"
-  local COLUMNS=${COLUMNS:-$(tput cols)}
+  local -i COLUMNS=${COLUMNS:-$(tput cols)}
   printf '%*s\n' "${COLUMNS:-80}" '' | tr ' ' "${CHARACTER:--}"
 }
 
@@ -93,34 +92,32 @@ log () {
   #   LOGLEVEL: The cutoff for message severity to log (Default is INFO).
   #   LOGFILE: Path to a log file to write messages to (Default is to skip file logging).
   #   TRACEDEPTH: Sets how many function levels above this one to start a stack trace (Default is 1).
-  local TRACEDEPTH=${TRACEDEPTH:-1} # 0 would be this function, which is not useful
+  local -u SEVERITY="${1:-NOTICE}"
+  local LOGMSG="${2:-$(cat /dev/stdin)}"
+  [ -n "$LOGMSG" ] || return 0
+  local -i TRACEDEPTH=${TRACEDEPTH:-1} # 0 would be this function, which is not useful
   case "${FUNCNAME[$TRACEDEPTH]}" in
     # If the function calling the logger is any of these, we want to find what called them
-    bash4check|quit) ((TRACEDEPTH++)) ;;
+    bash4check|quit|log) ((TRACEDEPTH++)) ;;
   esac
-  local SEVERITY="$(uc "${1:-NOTICE}")"
-  local LOGMSG="${2:-$(cat /dev/stdin)}"
-  local LOGLEVELS=(EMERGENCY ALERT CRITICAL ERROR WARN NOTICE INFO DEBUG)
-  local LOGCOLORS=("red bold underline" "red bold" "red underline" "red" "magenta" "cyan" "white" "yellow")
-  local LOGLEVEL="$(uc "${LOGLEVEL:-INFO}")"
   local LOGTAG="${SCRIPT_NAME:-$(basename "$0")} [${FUNCNAME[$TRACEDEPTH]}]"
-  local NUMERIC_LOGLEVEL="$(inarray "${LOGLEVELS[@]}" "${LOGLEVEL}")"
-  local NUMERIC_LOGLEVEL="${NUMERIC_LOGLEVEL:-6}"
-  local NUMERIC_SEVERITY="$(inarray "${LOGLEVELS[@]}" "${SEVERITY}")"
-  local NUMERIC_SEVERITY="${NUMERIC_SEVERITY:-5}"
-  local n=$'\n'
+  local -a LOGLEVELS=(EMERGENCY ALERT CRITICAL ERROR WARN NOTICE INFO DEBUG)
+  local -a LOGCOLORS=("red bold underline" "red bold" "red underline" "red" "magenta" "cyan" "white" "yellow")
+  local -u LOGLEVEL="${LOGLEVEL:-INFO}"
+  local -i NUMERIC_LOGLEVEL="$(inarray "${LOGLEVELS[@]}" "${LOGLEVEL}")"
+  local -i NUMERIC_LOGLEVEL="${NUMERIC_LOGLEVEL:-6}"
+  local -i NUMERIC_SEVERITY="$(inarray "${LOGLEVELS[@]}" "${SEVERITY}")"
+  local -i NUMERIC_SEVERITY="${NUMERIC_SEVERITY:-5}"
   # If EMERGENCY, ALERT, CRITICAL, or DEBUG, append stack trace to LOGMSG
-  if [ "$SEVERITY" == "DEBUG" ] || [ ${NUMERIC_SEVERITY} -le 2 ] ; then
-    LOGMSG+="${n}[${FUNCNAME[$TRACEDEPTH]}:stacktrace] Previous command: ${LOCAL_HISTORY[@]:$((${#LOCAL_HISTORY[@]}-20)):1}"
-    for (( i = $TRACEDEPTH; i < ${#FUNCNAME[@]}; i++ )) ; do
-      LOGMSG+="${n}[${FUNCNAME[$i]}:stacktrace] ${BASH_SOURCE[$i]}:${BASH_LINENO[$i-1]}"
+  if [ "$SEVERITY" == "DEBUG" ] || [ "${NUMERIC_SEVERITY}" -le 2 ] ; then
+    LOGMSG+=" stacktrace[$BASHPID]: " #[Command: ${LOCAL_HISTORY[-18]}]"
+    for (( i = TRACEDEPTH; i < ${#FUNCNAME[@]}; i++ )) ; do
+      LOGMSG+=" [${BASH_SOURCE[$i]}:${FUNCNAME[$i]}:${BASH_LINENO[$i-1]}]"
     done
   fi
-  # Split lines of message and log them
-  if [ ${NUMERIC_SEVERITY} -le ${NUMERIC_LOGLEVEL} ] ; then
-    while read -r LINE ; do
-      logger -s -p user.${NUMERIC_SEVERITY} -t "${LOGTAG} " -- "${LINE}"
-    done <<< "${LOGMSG}" |& \
+  # Send message to logger
+  if [ "${NUMERIC_SEVERITY}" -le "${NUMERIC_LOGLEVEL}" ] ; then
+    tr '\n' ' ' <<< "${LOGMSG}" | logger -s -p "user.${NUMERIC_SEVERITY}" -t "${LOGTAG} " |& \
       if [ -n "${LOGFILE}" ] ; then
         tee -a "${LOGFILE}" | pprint ${LOGCOLORS[$NUMERIC_SEVERITY]}
       elif [ ! -t 0 ]; then
@@ -149,7 +146,7 @@ quit () {
 bash4check () {
   # Call this function to enable features that depend on bash 4.0+.
   # Usage: bash4check
-  if [ ${BASH_VERSINFO[0]} -lt 4 ] ; then
+  if [ "${BASH_VERSINFO[0]}" -lt 4 ] ; then
     log "ERROR" "Sorry, you need at least bash version 4 to run this function: ${FUNCNAME[1]}"
     return 1
   else
@@ -161,9 +158,8 @@ finally () {
   # Function to perform final tasks before exit
   # Usage: FINALCMDS+=("command arg")
   until [ "${#FINALCMDS[@]}" == 0 ] ; do
-    log "DEBUG" "Executing pre-exit command: ${FINALCMDS[-1]}"
-    eval "${FINALCMDS[-1]}"
-    unset FINALCMDS[-1]
+    ${FINALCMDS[-1]} |& log "DEBUG"
+    unset "FINALCMDS[-1]"
   done
 }
 
@@ -187,7 +183,7 @@ requireuser () {
   # REQUIREUSER can be set as a variable or passed in as an argument.
   # Usage: requireuser [user]
   local REQUIREUSER="${1:-$REQUIREUSER}"
-  if [ -z $REQUIREUSER ] ; then
+  if [ -z "$REQUIREUSER" ] ; then
     quit "ERROR" "requireuser was called, but \$REQUIREUSER is not set"
   elif [ "$REQUIREUSER" != "$USER" ] ; then
     quit "ERROR" "Only $REQUIREUSER is allowed to run this script"
@@ -238,24 +234,17 @@ prunner () {
   #   prunner "command arg" "command"
   #   prunner -c gzip *.txt
   #   find . -maxdepth 1 | prunner -c 'echo found file:' -t 6
-  local PQUEUE=()
+  local -a PQUEUE=()
+  local PCMD=
   # Process option arguments
-  local OPT=
-  local OPTARG=
-  local OPTIND=
-  while getopts ":c:t:" OPT ; do
-    case ${OPT} in
-      c) local PCMD="${OPTARG}" ;;
-      t) local THREADS="${OPTARG}" ;;
-      :) quit "ERROR" "Option '-${OPTARG}' requires an argument." ;;
-      *) quit "ERROR" "Option '-${OPTARG}' is not defined." ;;
+  while (($#)) ; do
+    case "$1" in
+      --command|-c) shift ; local PCMD="$1" ;;
+      --threads|-t) shift ; local THREADS="$1" ;;
+      -*) quit "ERROR" "Option '$1' is not defined." ;;
+      *) PQUEUE+=("$1") ;;
     esac
-  done
-  # Throw away option arguments so that non-option arguments can be queued
-  shift $(($OPTIND-1))
-  # Add non-option arguments to queue
-  for ARG in "$@" ; do
-    PQUEUE+=("$ARG")
+    shift
   done
   # Add lines from stdin to queue
   if [ ! -t 0 ] ; then
@@ -263,14 +252,14 @@ prunner () {
       PQUEUE+=("$LINE")
     done
   fi
-  local QCOUNT="${#PQUEUE[@]}"
-  local INDEX=0
+  local -i QCOUNT="${#PQUEUE[@]}"
+  local -i INDEX=0
   log "INFO" "Starting parallel execution of $QCOUNT jobs with ${THREADS:-8} threads using command prefix '$PCMD'."
   until [ ${#PQUEUE[@]} == 0 ] ; do
     if [ "$(jobs -rp | wc -l)" -lt "${THREADS:-8}" ] ; then
-      log "DEBUG" "Starting command in parallel ($(($INDEX+1))/$QCOUNT): ${PCMD} ${PQUEUE[$INDEX]}"
-      eval "${PCMD} ${PQUEUE[$INDEX]}" |& log "DEBUG" || true &
-      unset PQUEUE[$INDEX]
+      log "NOTICE" "Starting command in parallel ($((INDEX+1))/$QCOUNT): ${PCMD} ${PQUEUE[$INDEX]}"
+      ${PCMD} ${PQUEUE[$INDEX]} 2> >(log "ERROR") | log "DEBUG" || true &
+      unset "PQUEUE[$INDEX]"
       ((INDEX++)) || true
     fi
   done
@@ -280,6 +269,9 @@ prunner () {
 
 # Trap for killing runaway processes and exiting
 trap "quit 'ALERT' 'Exiting on signal' '3'" SIGINT SIGTERM
+
+# Trap to capture errors
+trap 'quit "ALERT" "Command failed with exit code $?: [$BASH_COMMAND]" "$?"' ERR
 
 # Trap to do final tasks before exit
 trap finally EXIT
