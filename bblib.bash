@@ -119,7 +119,7 @@ log () {
   # Send message to logger
   if [ "${NUMERIC_SEVERITY}" -le "${NUMERIC_LOGLEVEL}" ] ; then
     tr '\n' ' ' <<< "${LOGMSG}" | logger -s -p "user.${NUMERIC_SEVERITY}" -t "${LOGTAG} " |& \
-      if [ -n "${LOGFILE}" ] ; then
+      if [ -n "${LOGFILE:-}" ] ; then
         tee -a "${LOGFILE}" | pprint ${LOGCOLORS[$NUMERIC_SEVERITY]}
       elif [ ! -t 0 ]; then
         pprint ${LOGCOLORS[$NUMERIC_SEVERITY]} < /dev/stdin
