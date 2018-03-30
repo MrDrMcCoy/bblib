@@ -182,8 +182,8 @@ requireuser () {
   # Checks to see if current user matches $REQUIREUSER and exits if not.
   # REQUIREUSER can be set as a variable or passed in as an argument.
   # Usage: requireuser [user]
-  local REQUIREUSER="${1:-$REQUIREUSER}"
-  if [ -z "$REQUIREUSER" ] ; then
+  local REQUIREUSER="${1:-${REQUIREUSER:-}}"
+  if [ -z "${REQUIREUSER:-}" ] ; then
     quit "ERROR" "requireuser was called, but \$REQUIREUSER is not set"
   elif [ "$REQUIREUSER" != "$USER" ] ; then
     quit "ERROR" "Only $REQUIREUSER is allowed to run this script"
