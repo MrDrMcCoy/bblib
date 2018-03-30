@@ -185,10 +185,10 @@ requireuser () {
   local REQUIREUSER="${1:-${REQUIREUSER:-}}"
   if [ -z "${REQUIREUSER:-}" ] ; then
     quit "ERROR" "requireuser was called, but \$REQUIREUSER is not set"
-  elif [ "$REQUIREUSER" != "$USER" ] ; then
+  elif [ "$REQUIREUSER" != "$EUID" ] ; then
     quit "ERROR" "Only $REQUIREUSER is allowed to run this script"
   else
-    log "DEBUG" "User '$USER' matches '$REQUIREUSER' and is allowed to run this script"
+    log "DEBUG" "User '$EUID' matches '$REQUIREUSER' and is allowed to run this script"
   fi
 }
 
