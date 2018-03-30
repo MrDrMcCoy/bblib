@@ -169,7 +169,7 @@ checkpid () {
   local PIDFILE="${PIDFILE:-${0}.pid}"
   if [ ! -d "/proc/$$" ]; then
     quit "ERROR" "This function requires procfs. Are you on Linux?"
-  elif [ -f "${PIDFILE}" ] && [ "$(cat "${PIDFILE}" 2> /dev/null)" != "$$" ] ; then
+  elif [ -f "${PIDFILE}" ] && [ "$(cat "${PIDFILE}" 2> /dev/null)" == "$$" ] ; then
     quit "WARN" "This script is already running with PID $(cat "${PIDFILE}" 2> /dev/null), exiting"
   else
     echo -n "$$" > "${PIDFILE}"
@@ -185,10 +185,10 @@ requireuser () {
   local REQUIREUSER="${1:-${REQUIREUSER:-}}"
   if [ -z "${REQUIREUSER:-}" ] ; then
     quit "ERROR" "requireuser was called, but \$REQUIREUSER is not set"
-  elif [ "$REQUIREUSER" != "$EUID" ] ; then
+  elif [ "$REQUIREUSER" != "$USER" ] ; then
     quit "ERROR" "Only $REQUIREUSER is allowed to run this script"
   else
-    log "DEBUG" "User '$EUID' matches '$REQUIREUSER' and is allowed to run this script"
+    log "DEBUG" "User '$USER' matches '$REQUIREUSER' and is allowed to run this script"
   fi
 }
 
