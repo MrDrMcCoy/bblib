@@ -7,7 +7,11 @@ The _"Better BASH Library"_: A set of functions to assist with creating well-wri
 Add this to the top of your BASH script:
 
 ```bash
+<<<<<<< HEAD
 source <(wget -qO- https://raw.githubusercontent.com/MrDrMcCoy/bblib/master/bblib.bash)
+=======
+source <(wget -qO- https://raw.githubusercontent.com/MrDrMcCoy/bblib/1.1.5/bblib.bash)
+>>>>>>> 58681505a6ee4107d49ce63b1ac4ea28c686e193
 ```
 
 Alternately, clone this repo locally and use `source` with the full path to `bblib.bash`.
@@ -20,7 +24,6 @@ Once `bblib.bash` is sourced in your script, you may refer to any of its supplie
 - This library sets the shell to exit on the first error from a command or pipe. This ensures safer execution and better debugging.
 - The library will set a trap for SIGINT and SIGTERM to allow you to kill it should a command behave undesirably.
 - It will set an additional trap that runs on exit to assist with mandatory cleanup. See the `finally` function for more details.
-- When defining additional functions, be sure to add `local CURRENT_FUNC="function_name"` to the beginning so that the log function can include it in the output for easier degugging.
 
 ## Function breakdown
 
@@ -29,10 +32,22 @@ Once `bblib.bash` is sourced in your script, you may refer to any of its supplie
   - Usage: `usage`
   - Notes: This is just an example. You should replace this with a similar function in your sourced conf file or in your main script.
 - `pprint`
+<<<<<<< HEAD
   - Description: Properly line-wraps text that is piped in to it
   - Usage:
     - `command | pprint`
     - `pprint <<< "text"`
+=======
+  - Description: Properly line-wraps text that is piped in to it. It tries to auto-detect your terminal width, which can be set manually as the first argument, and has a hard fallback of 80.
+  - Usage:
+    - `command | pprint [options]`
+    - `pprint [options] <<< "text"`
+  - Options:
+    - `[0-7]|[COLOR`]: Prints the ASCII escape code to set color.
+    - `[bold]`: Prints the ASCII escape code to set bold.
+    - `[underline]`: Prints the ASCII escape code to set underline.
+  - Notes: More info here: <http://www.tldp.org/HOWTO/Bash-Prompt-HOWTO/x405.html>
+>>>>>>> 58681505a6ee4107d49ce63b1ac4ea28c686e193
 - `inarray`
   - Description: Checks to see if a string is in an array and returns the index if true.
   - Usage: `inarray "${ARRAY[@]}" "SEARCHSTRING"`
@@ -40,12 +55,20 @@ Once `bblib.bash` is sourced in your script, you may refer to any of its supplie
   - Description: Converts text to uppercase.
   - Usage:
     - `command | uc`
+<<<<<<< HEAD
     - `uc "text"`
+=======
+    - `uc [text]`
+>>>>>>> 58681505a6ee4107d49ce63b1ac4ea28c686e193
 - `lc`
   - Description: Converts text to lowercase.
   - Usage:
     - `command | lc`
+<<<<<<< HEAD
     - `lc "text"`
+=======
+    - `lc [text]`
+>>>>>>> 58681505a6ee4107d49ce63b1ac4ea28c686e193
 - `hr`
   - Description: Prints a horizontal rule.
   - Usage:
@@ -54,8 +77,13 @@ Once `bblib.bash` is sourced in your script, you may refer to any of its supplie
 - `log`
   - Description: Formats log messages and writes them to syslog, stderr, and a file.
   - Usage:
+<<<<<<< HEAD
     - `command |& log "SEVERITY"`
     - `log "SEVERITY" "message"`
+=======
+    - `command |& log [severity]`
+    - `log [severity] [message]`
+>>>>>>> 58681505a6ee4107d49ce63b1ac4ea28c686e193
   - Aliases:
     - `log_debug` = `log "DEBUG"`
     - `log_info` = `log "INFO"`
@@ -65,22 +93,34 @@ Once `bblib.bash` is sourced in your script, you may refer to any of its supplie
     - `log_crit` = `log "CRITICAL"`
     - `log_alert` = `log "ALERT"`
     - `log_emer` = `log "EMERGENCY"`
+<<<<<<< HEAD
+=======
+  - Variables:
+    - LOGLEVEL: The cutoff for message severity to log (Default is INFO).
+    - LOGFILE: Path to a log file to write messages to (Default is to skip file logging).
+    - TRACEDEPTH: Sets how many function levels above this one to start a stack trace (Default is 1).
+>>>>>>> 58681505a6ee4107d49ce63b1ac4ea28c686e193
   - Notes:
-    - This function depends on the `inarray` and `uc` functions.
+    - This function depends on the `inarray`, `pprint`, and `uc` functions.
     - Logging to file requires `$LOGFILE` to be set.
     - The default log level is _INFO_ if you do not define it.
     - The default severity is _NOTICE_ if you do not define it.
+<<<<<<< HEAD
     - Valid levels/severities are _EMERGENCY, ALERT, CRITICAL, ERROR, WARN, NOTICE, INFO, DEBUG_ as per `syslog`. Other severities will numerically equate to NOTICE in `syslog`, but the text of the severity will be arbitrarily passed through.
+=======
+    - Valid levels/severities are _EMERGENCY, ALERT, CRITICAL, ERROR, WARN, NOTICE, INFO, DEBUG_ as per `syslog`. Other severities will numerically equate to NOTICE in `syslog`.
+    - All interactive output is color-coded via pprint.
+>>>>>>> 58681505a6ee4107d49ce63b1ac4ea28c686e193
 - `quit`
   - Description: Logs a message and exits
-  - Usage: `quit "SEVERITY" "message"`
+  - Usage: `quit [severity] [message] [exitcode]`
 - `argparser`
   - Description: Parses flags passed on the command-line
   - Usage: `argparser "$@"`
   - Notes: This function is meant to be copied into your sourced conf file and modified to suit your script's needs.
 - `requireuser`
   - Description: Checks to see if the user running the script matches the desired username and exits on failure.
-  - Usage: `requireuser USER`
+  - Usage: `requireuser [user]`
 - `bash4check`
   - Description: Checks to see if you are on BASH 4.0 or above and exits if not.
   - Usage: Place `bash4check` at the beginning of any function that uses BASH 4+ features.
@@ -94,6 +134,7 @@ Once `bblib.bash` is sourced in your script, you may refer to any of its supplie
 - `prunner`
   - Description: Executes commands in parallel.
   - Usage:
+<<<<<<< HEAD
     - `prunner "command args" "command args"`
     - `command_generator | prunner`
     - `prunner -t 6 -c gzip FILE FILE FILE`
@@ -109,10 +150,27 @@ Once `bblib.bash` is sourced in your script, you may refer to any of its supplie
   - Description: Set this variable in each function to inform the logger which function is emitting the message.
   - Used by: _everything_.
   - Default: 'SCRIPT_ROOT'
+=======
+    - `prunner -t [threads] -c [command] [files...]`
+    - `prunner [commandline] [commandline...]`
+    - `commandline_generator | prunner`
+    - `find . -name "*.txt" | prunner -c "gzip -v" -t 8`
+  - Arguments:
+    - `-c`: Command to prepend to each job line. If you do `-c gzip` and pipe in to or suffix `prunner` with arguments, the resulting background command will be `gzip $JOBLINE`.
+    - `-t`: Threads to use. Default is 8. You can alternately set the `THREADS` environment variable.
+  - Notes: The number of jobs to run concurrently may also be set by the `THREADS` variable.
+
+## Variables
+
+>>>>>>> 58681505a6ee4107d49ce63b1ac4ea28c686e193
 - `FINALCMDS`
   - Description: Array containing commands to run on exit. Add actions to its list by running: `FINALCMDS+=("command arg arg")`
   - Used by: `finally`.
   - Default: ()
+- `LOCAL_HISTORY`
+  - Description: Array containing every command that is run by the script. It is populated by a DEBUG trap.
+  - Default: ()
+  - Used by: `log`
 - `LOGLEVEL`
   - Description: Set this to determine the cutoff for logging severity according to the levels in `syslog`.
   - Used by: `log`.
@@ -139,6 +197,27 @@ Once `bblib.bash` is sourced in your script, you may refer to any of its supplie
   - Description: Integer to control the number of background jobs to allow at once.
   - Used by: `prunner`.
   - Default: 8
+- `TRACEDEPTH`
+  - Description: How many function levels above `log` to start printing stack trace messages.
+  - Default: 1
+  - Used by: `log`
+
+## Dependencies
+
+The commands that `bblib.bash` calls out to are listed here, in case you are on a system that does not have them:
+
+- `cat`
+  - Used by: `usage`
+- `fold`
+  - Used by: `pprint`
+- `logger`
+  - Used by: `log`
+- `tee`
+  - Used by: `log`
+- `tr`
+  - Used by: `uc`, `lc`, `log`
+- `tput`
+  - Used by: `pprint`
 
 ## Dependencies
 
@@ -161,3 +240,4 @@ If you would like to extend this library, some resources for advanced usage are 
 - The Advanced BASH guide: <http://tldp.org/LDP/abs/html/>
 - The BASH Hackers Wiki has great advanced usage description and examples for BASH: <http://wiki.bash-hackers.org/>
 - BASH Style Guide: <https://google.github.io/styleguide/shell.xml>
+- A very good `getopts` tutorial: <https://sookocheff.com/post/bash/parsing-bash-script-arguments-with-shopts/>

@@ -39,6 +39,6 @@ main () {
   # ...
 }
 
-# Run main
-main
+# Run main and pass it the arguments from your shell
+main "$@"
 quit 'INFO' 'All tasks completed successfully'
