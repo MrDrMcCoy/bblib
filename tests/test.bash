@@ -48,9 +48,9 @@ main () {
 
   # Pid check
   log "INFO" "Test checkpid"
-  #checkpid
+  checkpid || true
   log "INFO" "Test checkpid in second shell"
-  bash -c 'source ../bblib.bash ; checkpid' || true
+  bash -c 'source ../bblib.bash ; source test.bash.conf ; checkpid' || true
 
   # User check
   log "INFO" "Test requireuser with \$REQUIREUSER"
@@ -71,13 +71,13 @@ main () {
 
   # Parallel test
   log "INFO" "Test prunner gzipping the .out files with arguments for the jobs"
-  prunner -c "gzip -fk" *.out false
+  prunner -c "gzip -fk" *.out
   log "INFO" "Test prunner echoing the .out files with stdin for the jobs"
   find . -maxdepth 1 -type f -name "*.out" | head -n5 | prunner -c "echo found file " -t 6
 
   # Add cleanup tasks
-  FINALCMDS+=('rm *.out')
-  FINALCMDS+=('rm *.gz')
+  FINALCMDS+=('rm -v *.out')
+  FINALCMDS+=('rm -v *.gz')
 
   false
 }

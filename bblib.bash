@@ -94,13 +94,13 @@ log () {
   #   TRACEDEPTH: Sets how many function levels above this one to start a stack trace (Default is 1).
   local -u SEVERITY="${1:-NOTICE}"
   local LOGMSG="${2:-$(cat /dev/stdin)}"
-  [ -n "$LOGMSG" ] || return 0
+  [[ -n "$LOGMSG" ]] || return 0
   local -i TRACEDEPTH=${TRACEDEPTH:-1} # 0 would be this function, which is not useful
   until [[ ! "${FUNCNAME[$TRACEDEPTH]}" =~ bash4check|quit|log ]] ; do
     # We want to look above these functions as well
     ((TRACEDEPTH++))
   done
-  local LOGTAG="${SCRIPT_NAME:-$(basename "$0")} [${FUNCNAME[$TRACEDEPTH]}]"
+  local LOGTAG="${SCRIPT_NAME:-$(basename "$0")} ${FUNCNAME[$TRACEDEPTH]}"
   local -a LOGLEVELS=(EMERGENCY ALERT CRITICAL ERROR WARN NOTICE INFO DEBUG)
   local -a LOGCOLORS=("red bold underline" "red bold" "red underline" "red" "magenta" "cyan" "white" "yellow")
   local -u LOGLEVEL="${LOGLEVEL:-INFO}"
@@ -109,11 +109,11 @@ log () {
   local -i NUMERIC_SEVERITY="$(inarray "${LOGLEVELS[@]}" "${SEVERITY}")"
   local -i NUMERIC_SEVERITY="${NUMERIC_SEVERITY:-5}"
   # If EMERGENCY, ALERT, CRITICAL, or DEBUG, append stack trace to LOGMSG
-  if [ "$SEVERITY" == "DEBUG" ] || [ "${NUMERIC_SEVERITY}" -le 2 ] ; then
+  if [[ "$SEVERITY" == "DEBUG" ]] || [[ "${NUMERIC_SEVERITY}" -le 2 ]] ; then
     # If DEBUG, include the command that was run
-    [ "$SEVERITY" != "DEBUG" ] || LOGMSG+=" $(eval echo "Command: ${LOCAL_HISTORY[-20]}")"
+    [[ "$SEVERITY" != "DEBUG" ]] || LOGMSG+=" $(eval echo "Command: ${PWD} \$ ${LOCAL_HISTORY[-$((TRACEDEPTH+19))]}" 2>/dev/null || true)"
     for (( i = TRACEDEPTH; i < ${#FUNCNAME[@]}; i++ )) ; do
-      LOGMSG+=" [${BASH_SOURCE[$i]}:${FUNCNAME[$i]}:${BASH_LINENO[$i-1]}]"
+      LOGMSG+=" > ${BASH_SOURCE[$i]}:${FUNCNAME[$i]}:${BASH_LINENO[$i-1]}"
     done
   fi
   # Send message to logger
@@ -157,8 +157,8 @@ bash4check () {
 finally () {
   # Function to perform final tasks before exit
   # Usage: FINALCMDS+=("command arg")
-  until [ "${#FINALCMDS[@]}" == 0 ] ; do
-    ${FINALCMDS[-1]} 2> >(log "ERROR") | log "DEBUG"
+  until [[ "${#FINALCMDS[@]}" == 0 ]] ; do
+    ${FINALCMDS[-1]} 2> >(log "ALERT") | log "DEBUG"
     unset "FINALCMDS[-1]"
   done
 }
@@ -167,14 +167,16 @@ checkpid () {
   # Check for and maintain pidfile
   # Usage: checkpid
   local PIDFILE="${PIDFILE:-${0}.pid}"
-  if [ ! -d "/proc/$$" ]; then
+  if [[ ! -d "/proc/$$" ]]; then
     quit "ERROR" "This function requires procfs. Are you on Linux?"
-  elif [ -f "${PIDFILE}" ] && [ "$(cat "${PIDFILE}" 2> /dev/null)" == "$$" ] ; then
-    quit "WARN" "This script is already running with PID $(cat "${PIDFILE}" 2> /dev/null), exiting"
-  else
+  elif [[ ! -f "${PIDFILE}" ]] ; then
     echo -n "$$" > "${PIDFILE}"
-    FINALCMDS+=("rm '${PIDFILE}'")
+    FINALCMDS+=("rm -v ${PIDFILE}")
     log "DEBUG" "PID $$ has no conflicts and has been written to ${PIDFILE}"
+  elif [[ "$( cat "${PIDFILE}" || true )" -ne $$ ]] ; then
+    quit "ERROR" "This script is already running, exiting."
+  else
+    quit "ALERT" "Unknown error verifying unique PID."
   fi
 }
 
