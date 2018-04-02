@@ -78,9 +78,10 @@ uc () {
 hr () {
   # Print horizontal rule
   # Usage: hr [character]
-  local CHARACTER="${1:0:1}"
+  local CHARACTER="${1:--}"
+  local CHARACTER="${CHARACTER:0:1}"
   local -i COLUMNS=${COLUMNS:-$(tput cols)}
-  printf '%*s\n' "${COLUMNS:-80}" '' | tr ' ' "${CHARACTER:--}"
+  printf '%*s\n' "${COLUMNS:-80}" '' | tr ' ' "${CHARACTER}"
 }
 
 log () {
