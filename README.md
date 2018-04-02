@@ -7,11 +7,7 @@ The _"Better BASH Library"_: A set of functions to assist with creating well-wri
 Add this to the top of your BASH script:
 
 ```bash
-<<<<<<< HEAD
-source <(wget -qO- https://raw.githubusercontent.com/MrDrMcCoy/bblib/master/bblib.bash)
-=======
 source <(wget -qO- https://raw.githubusercontent.com/MrDrMcCoy/bblib/1.1.5/bblib.bash)
->>>>>>> 58681505a6ee4107d49ce63b1ac4ea28c686e193
 ```
 
 Alternately, clone this repo locally and use `source` with the full path to `bblib.bash`.
@@ -32,12 +28,6 @@ Once `bblib.bash` is sourced in your script, you may refer to any of its supplie
   - Usage: `usage`
   - Notes: This is just an example. You should replace this with a similar function in your sourced conf file or in your main script.
 - `pprint`
-<<<<<<< HEAD
-  - Description: Properly line-wraps text that is piped in to it
-  - Usage:
-    - `command | pprint`
-    - `pprint <<< "text"`
-=======
   - Description: Properly line-wraps text that is piped in to it. It tries to auto-detect your terminal width, which can be set manually as the first argument, and has a hard fallback of 80.
   - Usage:
     - `command | pprint [options]`
@@ -47,7 +37,6 @@ Once `bblib.bash` is sourced in your script, you may refer to any of its supplie
     - `[bold]`: Prints the ASCII escape code to set bold.
     - `[underline]`: Prints the ASCII escape code to set underline.
   - Notes: More info here: <http://www.tldp.org/HOWTO/Bash-Prompt-HOWTO/x405.html>
->>>>>>> 58681505a6ee4107d49ce63b1ac4ea28c686e193
 - `inarray`
   - Description: Checks to see if a string is in an array and returns the index if true.
   - Usage: `inarray "${ARRAY[@]}" "SEARCHSTRING"`
@@ -55,20 +44,12 @@ Once `bblib.bash` is sourced in your script, you may refer to any of its supplie
   - Description: Converts text to uppercase.
   - Usage:
     - `command | uc`
-<<<<<<< HEAD
-    - `uc "text"`
-=======
     - `uc [text]`
->>>>>>> 58681505a6ee4107d49ce63b1ac4ea28c686e193
 - `lc`
   - Description: Converts text to lowercase.
   - Usage:
     - `command | lc`
-<<<<<<< HEAD
-    - `lc "text"`
-=======
     - `lc [text]`
->>>>>>> 58681505a6ee4107d49ce63b1ac4ea28c686e193
 - `hr`
   - Description: Prints a horizontal rule.
   - Usage:
@@ -77,13 +58,8 @@ Once `bblib.bash` is sourced in your script, you may refer to any of its supplie
 - `log`
   - Description: Formats log messages and writes them to syslog, stderr, and a file.
   - Usage:
-<<<<<<< HEAD
-    - `command |& log "SEVERITY"`
-    - `log "SEVERITY" "message"`
-=======
     - `command |& log [severity]`
     - `log [severity] [message]`
->>>>>>> 58681505a6ee4107d49ce63b1ac4ea28c686e193
   - Aliases:
     - `log_debug` = `log "DEBUG"`
     - `log_info` = `log "INFO"`
@@ -93,24 +69,17 @@ Once `bblib.bash` is sourced in your script, you may refer to any of its supplie
     - `log_crit` = `log "CRITICAL"`
     - `log_alert` = `log "ALERT"`
     - `log_emer` = `log "EMERGENCY"`
-<<<<<<< HEAD
-=======
   - Variables:
     - LOGLEVEL: The cutoff for message severity to log (Default is INFO).
     - LOGFILE: Path to a log file to write messages to (Default is to skip file logging).
     - TRACEDEPTH: Sets how many function levels above this one to start a stack trace (Default is 1).
->>>>>>> 58681505a6ee4107d49ce63b1ac4ea28c686e193
   - Notes:
     - This function depends on the `inarray`, `pprint`, and `uc` functions.
     - Logging to file requires `$LOGFILE` to be set.
     - The default log level is _INFO_ if you do not define it.
     - The default severity is _NOTICE_ if you do not define it.
-<<<<<<< HEAD
-    - Valid levels/severities are _EMERGENCY, ALERT, CRITICAL, ERROR, WARN, NOTICE, INFO, DEBUG_ as per `syslog`. Other severities will numerically equate to NOTICE in `syslog`, but the text of the severity will be arbitrarily passed through.
-=======
     - Valid levels/severities are _EMERGENCY, ALERT, CRITICAL, ERROR, WARN, NOTICE, INFO, DEBUG_ as per `syslog`. Other severities will numerically equate to NOTICE in `syslog`.
     - All interactive output is color-coded via pprint.
->>>>>>> 58681505a6ee4107d49ce63b1ac4ea28c686e193
 - `quit`
   - Description: Logs a message and exits
   - Usage: `quit [severity] [message] [exitcode]`
@@ -134,23 +103,6 @@ Once `bblib.bash` is sourced in your script, you may refer to any of its supplie
 - `prunner`
   - Description: Executes commands in parallel.
   - Usage:
-<<<<<<< HEAD
-    - `prunner "command args" "command args"`
-    - `command_generator | prunner`
-    - `prunner -t 6 -c gzip FILE FILE FILE`
-    - `find . -type f | prunner -c "gzip -v" -t 8`
-  - Arguments:
-    - `-c`: Command to prepend to each job line. If you do `-c gzip` and pipe in or suffix `prunner` with more lines, the resulting background command will be `gzip $JOBLINE`.
-    - `-t`: Threads to use. Default is 8. You can alternately set the `THREADS` environment variable.
-  - Notes: The number of jobs to run concurrently is controlled by the `THREADS` variable.
-
-## Variables
-
-- `CURRENT_FUNC`
-  - Description: Set this variable in each function to inform the logger which function is emitting the message.
-  - Used by: _everything_.
-  - Default: 'SCRIPT_ROOT'
-=======
     - `prunner -t [threads] -c [command] [files...]`
     - `prunner [commandline] [commandline...]`
     - `commandline_generator | prunner`
@@ -162,7 +114,6 @@ Once `bblib.bash` is sourced in your script, you may refer to any of its supplie
 
 ## Variables
 
->>>>>>> 58681505a6ee4107d49ce63b1ac4ea28c686e193
 - `FINALCMDS`
   - Description: Array containing commands to run on exit. Add actions to its list by running: `FINALCMDS+=("command arg arg")`
   - Used by: `finally`.
@@ -218,19 +169,6 @@ The commands that `bblib.bash` calls out to are listed here, in case you are on 
   - Used by: `uc`, `lc`, `log`
 - `tput`
   - Used by: `pprint`
-
-## Dependencies
-
-The commands that `bblib.bash` calls out to are listed here, in case you are on a system that does not have them:
-
-- `fold`
-  - Used by: `pprint`
-- `tr`
-  - Used by: `uc`, `lc`, `log`
-- `logger`
-  - Used by: `log`
-- `getopts`
-  - Used by: `argparser`
 
 ## Resources
 
