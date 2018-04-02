@@ -76,8 +76,8 @@ main () {
   find . -maxdepth 1 -type f -name "*.out" | head -n5 | prunner -c "echo found file " -t 6
 
   # Add cleanup tasks
-  FINALCMDS+=('rm *.out')
-  FINALCMDS+=('rm *.gz')
+  FINALCMDS+=('rm -v *.out')
+  FINALCMDS+=('rm -v *.gz')
 
   false
 }
