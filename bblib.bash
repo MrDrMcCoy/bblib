@@ -94,13 +94,13 @@ log () {
   #   TRACEDEPTH: Sets how many function levels above this one to start a stack trace (Default is 1).
   local -u SEVERITY="${1:-NOTICE}"
   local LOGMSG="${2:-$(cat /dev/stdin)}"
-  [ -n "$LOGMSG" ] || return 0
+  [[ -n "$LOGMSG" ]] || return 0
   local -i TRACEDEPTH=${TRACEDEPTH:-1} # 0 would be this function, which is not useful
   until [[ ! "${FUNCNAME[$TRACEDEPTH]}" =~ bash4check|quit|log ]] ; do
     # We want to look above these functions as well
     ((TRACEDEPTH++))
   done
-  local LOGTAG="${SCRIPT_NAME:-$(basename "$0")} [${FUNCNAME[$TRACEDEPTH]}]"
+  local LOGTAG="${SCRIPT_NAME:-$(basename "$0")} ${FUNCNAME[$TRACEDEPTH]}"
   local -a LOGLEVELS=(EMERGENCY ALERT CRITICAL ERROR WARN NOTICE INFO DEBUG)
   local -a LOGCOLORS=("red bold underline" "red bold" "red underline" "red" "magenta" "cyan" "white" "yellow")
   local -u LOGLEVEL="${LOGLEVEL:-INFO}"
@@ -109,11 +109,11 @@ log () {
   local -i NUMERIC_SEVERITY="$(inarray "${LOGLEVELS[@]}" "${SEVERITY}")"
   local -i NUMERIC_SEVERITY="${NUMERIC_SEVERITY:-5}"
   # If EMERGENCY, ALERT, CRITICAL, or DEBUG, append stack trace to LOGMSG
-  if [ "$SEVERITY" == "DEBUG" ] || [ "${NUMERIC_SEVERITY}" -le 2 ] ; then
+  if [[ "$SEVERITY" == "DEBUG" ]] || [[ "${NUMERIC_SEVERITY}" -le 2 ]] ; then
     # If DEBUG, include the command that was run
-    [ "$SEVERITY" != "DEBUG" ] || LOGMSG+=" $(eval echo "Command: ${PWD} \$ ${LOCAL_HISTORY[-$((TRACEDEPTH+19))]}" 2>/dev/null || true)"
+    [[ "$SEVERITY" != "DEBUG" ]] || LOGMSG+=" $(eval echo "Command: ${PWD} \$ ${LOCAL_HISTORY[-$((TRACEDEPTH+19))]}" 2>/dev/null || true)"
     for (( i = TRACEDEPTH; i < ${#FUNCNAME[@]}; i++ )) ; do
-      LOGMSG+=" [${BASH_SOURCE[$i]}:${FUNCNAME[$i]}:${BASH_LINENO[$i-1]}]"
+      LOGMSG+=" > ${BASH_SOURCE[$i]}:${FUNCNAME[$i]}:${BASH_LINENO[$i-1]}"
     done
   fi
   # Send message to logger
