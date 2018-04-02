@@ -150,7 +150,7 @@ bash4check () {
   if [ "${BASH_VERSINFO[0]}" -lt 4 ] ; then
     quit "ALERT" "Sorry, you need at least bash version 4 to run this function: ${FUNCNAME[1]}"
   else
-    log "DEBUG" "This script is safe to enable BASH version 4 features"
+    log "DEBUG" "This script is safe to enable Bash version 4 features"
   fi
 }
 
@@ -273,7 +273,7 @@ prunner () {
 trap finally EXIT
 
 # Trap for killing runaway processes and exiting
-trap "quit 'ALERT' 'Exiting on signal' '3'" SIGINT SIGTERM
+trap "quit 'ALERT' 'Exiting on signal' '3'" INT TERM QUIT HUP
 
 # Trap to capture errors
 trap 'quit "ALERT" "Command failed with exit code $?: $BASH_COMMAND" "$?"' ERR
