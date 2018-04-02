@@ -167,9 +167,9 @@ checkpid () {
   # Check for and maintain pidfile
   # Usage: checkpid
   local PIDFILE="${PIDFILE:-${0}.pid}"
-  if [ ! -d "/proc/$$" ]; then
+  if [[ ! -d "/proc/$$" ]]; then
     quit "ERROR" "This function requires procfs. Are you on Linux?"
-  elif [ -f "${PIDFILE}" ] && [ "$(cat "${PIDFILE}" 2> /dev/null)" == "$$" ] ; then
+  elif [[ "$(cat "${PIDFILE}" 2> /dev/null || true)" == "$$" ]] ; then
     quit "WARN" "This script is already running with PID $(cat "${PIDFILE}" 2> /dev/null), exiting"
   else
     echo -n "$$" > "${PIDFILE}"
