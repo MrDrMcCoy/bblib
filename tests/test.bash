@@ -29,9 +29,9 @@ main () {
 
   # Test lc, uc, and pprint
   log "INFO" "Test lc"
-  lc < lorem-ipsum.txt | pprint > lorem-ipsum-lc-pprint.out |& log "DEBUG"
+  head -n1 lorem-ipsum.txt | lc | pprint |& log "DEBUG"
   log "INFO" "Test uc"
-  uc < lorem-ipsum.txt | pprint > lorem-ipsum-uc-pprint.out |& log "DEBUG"
+  tail -n1 lorem-ipsum.txt | uc | pprint |& log "DEBUG"
 
   # Test shorthand log log loggers
   log_debug "shorthand log_debug test"
