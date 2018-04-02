@@ -48,7 +48,7 @@ main () {
 
   # Pid check
   log "INFO" "Test checkpid"
-  checkpid
+  checkpid || true
   log "INFO" "Test checkpid in second shell"
   bash -c 'source ../bblib.bash ; source test.bash.conf ; checkpid' || true
 

@@ -166,7 +166,6 @@ finally () {
 checkpid () {
   # Check for and maintain pidfile
   # Usage: checkpid
-  set -x
   local PIDFILE="${PIDFILE:-${0}.pid}"
   if [[ ! -d "/proc/$$" ]]; then
     quit "ERROR" "This function requires procfs. Are you on Linux?"
@@ -179,7 +178,6 @@ checkpid () {
   else
     quit "ALERT" "Unknown error verifying PID."
   fi
-  set +x
 }
 
 requireuser () {
