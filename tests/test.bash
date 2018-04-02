@@ -48,9 +48,9 @@ main () {
 
   # Pid check
   log "INFO" "Test checkpid"
-  #checkpid
+  checkpid
   log "INFO" "Test checkpid in second shell"
-  bash -c 'source ../bblib.bash ; checkpid' || true
+  bash -c 'source ../bblib.bash ; source test.bash.conf ; checkpid' || true
 
   # User check
   log "INFO" "Test requireuser with \$REQUIREUSER"
