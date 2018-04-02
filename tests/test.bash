@@ -23,7 +23,8 @@ main () {
   bash -c 'source ../bblib.bash ; source test.bash.conf ; argparser -y' || true
 
   # Test hr
-  log "INFO" "Test hr ="
+  log "INFO" "Test hr"
+  hr
   hr =
 
   # Test lc, uc, and pprint
