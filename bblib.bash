@@ -158,7 +158,7 @@ finally () {
   # Function to perform final tasks before exit
   # Usage: FINALCMDS+=("command arg")
   until [[ "${#FINALCMDS[@]}" == 0 ]] ; do
-    ${FINALCMDS[-1]} 2> >(log "ALERT") | log "DEBUG"
+    ${FINALCMDS[-1]} |& log "DEBUG"
     unset "FINALCMDS[-1]"
   done
 }
@@ -171,7 +171,7 @@ checkpid () {
     quit "ERROR" "This function requires procfs. Are you on Linux?"
   elif [[ ! -f "${PIDFILE}" ]] ; then
     echo -n "$$" > "${PIDFILE}"
-    FINALCMDS+=("rm '${PIDFILE}'")
+    FINALCMDS+=("rm -v '${PIDFILE}'")
     log "DEBUG" "PID $$ has no conflicts and has been written to ${PIDFILE}"
   elif [[ "$( cat "${PIDFILE}" || true )" -ne $$ ]] ; then
     quit "ERROR" "This script is already running, exiting."
