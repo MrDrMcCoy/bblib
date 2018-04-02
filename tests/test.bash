@@ -27,11 +27,10 @@ main () {
   hr
   hr =
 
-  # Test lc, uc, and pprint
   log "INFO" "Test lc"
-  head -n1 lorem-ipsum.txt | lc | pprint |& log "DEBUG"
+  head -n1 lorem-ipsum.txt | lc |& log "DEBUG"
   log "INFO" "Test uc"
-  tail -n1 lorem-ipsum.txt | uc | pprint |& log "DEBUG"
+  tail -n1 lorem-ipsum.txt | uc |& log "DEBUG"
 
   # Test shorthand log log loggers
   log_debug "shorthand log_debug test"
