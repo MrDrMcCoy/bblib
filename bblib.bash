@@ -166,16 +166,18 @@ finally () {
 checkpid () {
   # Check for and maintain pidfile
   # Usage: checkpid
+  set -x
   local PIDFILE="${PIDFILE:-${0}.pid}"
   if [[ ! -d "/proc/$$" ]]; then
     quit "ERROR" "This function requires procfs. Are you on Linux?"
-  elif [[ "$(cat "${PIDFILE}" 2> /dev/null || true)" == "$$" ]] ; then
+  elif [[ "$(cat "${PIDFILE}" 2> /dev/null || true)" == $$ ]] ; then
     quit "WARN" "This script is already running with PID $(cat "${PIDFILE}" 2> /dev/null), exiting"
   else
     echo -n "$$" > "${PIDFILE}"
     FINALCMDS+=("rm '${PIDFILE}'")
     log "DEBUG" "PID $$ has no conflicts and has been written to ${PIDFILE}"
   fi
+  set +x
 }
 
 requireuser () {

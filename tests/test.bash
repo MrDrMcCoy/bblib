@@ -50,7 +50,7 @@ main () {
   log "INFO" "Test checkpid"
   checkpid
   log "INFO" "Test checkpid in second shell"
-  bash -xc 'source ../bblib.bash ; source test.bash.conf ; checkpid' || true
+  bash -c 'source ../bblib.bash ; source test.bash.conf ; checkpid' || true
 
   # User check
   log "INFO" "Test requireuser with \$REQUIREUSER"
