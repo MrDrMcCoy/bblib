@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Scripts should fail on all logic errors, as we don't want to let them run amok
-set -o pipefail
-set -o functrace
 set -o errtrace
+set -o functrace
 set -o nounset
+set -o pipefail
 
 # The FINALCMDS array needs to be defined before setting up finally
 FINALCMDS=()
@@ -169,7 +169,7 @@ checkpid () {
   local PIDFILE="${PIDFILE:-${0}.pid}"
   if [ ! -d "/proc/$$" ]; then
     quit "ERROR" "This function requires procfs. Are you on Linux?"
-  elif [ -f "${PIDFILE}" ] && [ "$(cat "${PIDFILE}" 2> /dev/null)" != "$$" ] ; then
+  elif [ -f "${PIDFILE}" ] && [ "$(cat "${PIDFILE}" 2> /dev/null)" == "$$" ] ; then
     quit "WARN" "This script is already running with PID $(cat "${PIDFILE}" 2> /dev/null), exiting"
   else
     echo -n "$$" > "${PIDFILE}"
@@ -185,10 +185,10 @@ requireuser () {
   local REQUIREUSER="${1:-${REQUIREUSER:-}}"
   if [ -z "${REQUIREUSER:-}" ] ; then
     quit "ERROR" "requireuser was called, but \$REQUIREUSER is not set"
-  elif [ "$REQUIREUSER" != "$EUID" ] ; then
+  elif [ "$REQUIREUSER" != "$USER" ] ; then
     quit "ERROR" "Only $REQUIREUSER is allowed to run this script"
   else
-    log "DEBUG" "User '$EUID' matches '$REQUIREUSER' and is allowed to run this script"
+    log "DEBUG" "User '$USER' matches '$REQUIREUSER' and is allowed to run this script"
   fi
 }
 
@@ -241,7 +241,7 @@ prunner () {
   while (($#)) ; do
     case "$1" in
       --command|-c) shift ; local PCMD="$1" ;;
-      --threads|-t) shift ; local THREADS="$1" ;;
+      --threads|-t) shift ; local -i THREADS="$1" ;;
       -*) quit "ERROR" "Option '$1' is not defined." ;;
       *) PQUEUE+=("$1") ;;
     esac
@@ -265,14 +265,14 @@ prunner () {
   wait
 }
 
+# Trap to do final tasks before exit
+trap finally EXIT
+
 # Trap for killing runaway processes and exiting
 trap "quit 'ALERT' 'Exiting on signal' '3'" SIGINT SIGTERM
 
 # Trap to capture errors
 trap 'quit "ALERT" "Command failed with exit code $?: $BASH_COMMAND" "$?"' ERR
-
-# Trap to do final tasks before exit
-trap finally EXIT
 
 # Trap to capture history within this script for debugging
 trap 'LOCAL_HISTORY+=("$BASH_COMMAND")' DEBUG
