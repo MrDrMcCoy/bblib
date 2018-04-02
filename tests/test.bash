@@ -71,7 +71,7 @@ main () {
 
   # Parallel test
   log "INFO" "Test prunner gzipping the .out files with arguments for the jobs"
-  prunner -c "gzip -fk" *.out false
+  prunner -c "gzip -fk" *.out
   log "INFO" "Test prunner echoing the .out files with stdin for the jobs"
   find . -maxdepth 1 -type f -name "*.out" | head -n5 | prunner -c "echo found file " -t 6
 
