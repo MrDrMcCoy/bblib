@@ -23,8 +23,7 @@ main () {
   bash -c 'source ../bblib.bash ; source test.bash.conf ; argparser -y' || true
 
   # Test hr
-  log "INFO" "Test hr"
-  hr
+  log "INFO" "Test hr ="
   hr =
 
   # Test lc, uc, and pprint
@@ -49,7 +48,7 @@ main () {
 
   # Pid check
   log "INFO" "Test checkpid"
-  checkpid
+  #checkpid
   log "INFO" "Test checkpid in second shell"
   bash -c 'source ../bblib.bash ; checkpid' || true
 
