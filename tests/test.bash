@@ -27,11 +27,14 @@ main () {
   hr
   hr =
 
-  # Test lc, uc, pprint
+  # Test lc, uc, pprint line wrapping
   log "INFO" "Test lc"
   head -n1 lorem-ipsum.txt | lc | pprint
   log "INFO" "Test uc"
   tail -n1 lorem-ipsum.txt | uc | pprint
+
+  # Test pprint colors
+  log "INFO" "Test pprint"
   pprint 0 <<< black
   pprint 1 <<< red
   pprint 2 <<< green
