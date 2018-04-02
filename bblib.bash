@@ -111,7 +111,7 @@ log () {
   # If EMERGENCY, ALERT, CRITICAL, or DEBUG, append stack trace to LOGMSG
   if [ "$SEVERITY" == "DEBUG" ] || [ "${NUMERIC_SEVERITY}" -le 2 ] ; then
     # If DEBUG, include the command that was run
-    [ "$SEVERITY" != "DEBUG" ] || LOGMSG+=" $(eval echo "Command: ${LOCAL_HISTORY[-20]}" 2>/dev/null || true)"
+    [ "$SEVERITY" != "DEBUG" ] || LOGMSG+=" $(eval echo "Command: ${LOCAL_HISTORY[-$((TRACEDEPTH+19))]}" 2>/dev/null || true)"
     for (( i = TRACEDEPTH; i < ${#FUNCNAME[@]}; i++ )) ; do
       LOGMSG+=" [${BASH_SOURCE[$i]}:${FUNCNAME[$i]}:${BASH_LINENO[$i-1]}]"
     done
