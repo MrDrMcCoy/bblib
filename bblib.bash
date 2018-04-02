@@ -111,7 +111,7 @@ log () {
   # If EMERGENCY, ALERT, CRITICAL, or DEBUG, append stack trace to LOGMSG
   if [ "$SEVERITY" == "DEBUG" ] || [ "${NUMERIC_SEVERITY}" -le 2 ] ; then
     # If DEBUG, include the command that was run
-    [ "$SEVERITY" != "DEBUG" ] || LOGMSG+=" $(eval echo "Command: ${LOCAL_HISTORY[-$((TRACEDEPTH+19))]}" 2>/dev/null || true)"
+    [ "$SEVERITY" != "DEBUG" ] || LOGMSG+=" $(eval echo "Command: ${PWD} \$ ${LOCAL_HISTORY[-$((TRACEDEPTH+19))]}" 2>/dev/null || true)"
     for (( i = TRACEDEPTH; i < ${#FUNCNAME[@]}; i++ )) ; do
       LOGMSG+=" [${BASH_SOURCE[$i]}:${FUNCNAME[$i]}:${BASH_LINENO[$i-1]}]"
     done
@@ -157,8 +157,8 @@ bash4check () {
 finally () {
   # Function to perform final tasks before exit
   # Usage: FINALCMDS+=("command arg")
-  until [ "${#FINALCMDS[@]}" == 0 ] ; do
-    ${FINALCMDS[-1]} 2> >(log "ERROR") | log "DEBUG"
+  until [[ "${#FINALCMDS[@]}" == 0 ]] ; do
+    ${FINALCMDS[-1]} 2> >(log "ALERT") | log "DEBUG"
     unset "FINALCMDS[-1]"
   done
 }
@@ -274,7 +274,7 @@ trap finally EXIT
 trap "quit 'ALERT' 'Exiting on signal' '3'" SIGINT SIGTERM
 
 # Trap to capture errors
-trap 'quit "ALERT" "Command failed with exit code $?: ${PWD}\$ $BASH_COMMAND" "$?"' ERR
+trap 'quit "ALERT" "Command failed with exit code $?: $BASH_COMMAND" "$?"' ERR
 
 # Trap to capture history within this script for debugging
 trap 'LOCAL_HISTORY+=("$BASH_COMMAND")' DEBUG
