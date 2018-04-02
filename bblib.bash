@@ -158,7 +158,7 @@ finally () {
   # Function to perform final tasks before exit
   # Usage: FINALCMDS+=("command arg")
   until [[ "${#FINALCMDS[@]}" == 0 ]] ; do
-    ${FINALCMDS[-1]} |& log "DEBUG"
+    ${FINALCMDS[-1]} 2> >(log "ALERT") | log "DEBUG"
     unset "FINALCMDS[-1]"
   done
 }
