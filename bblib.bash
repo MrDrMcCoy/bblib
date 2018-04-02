@@ -175,6 +175,8 @@ checkpid () {
     log "DEBUG" "PID $$ has no conflicts and has been written to ${PIDFILE}"
   elif [[ "$( cat "${PIDFILE}" || true )" -ne $$ ]] ; then
     quit "ERROR" "This script is already running, exiting."
+  elif [[ "$( cat "${PIDFILE}" || true )" -eq $$ ]] ; then
+    log "DEBUG" "PID $$ matches the contents of ${PIDFILE}, proceeding."
   else
     quit "ALERT" "Unknown error verifying unique PID."
   fi
