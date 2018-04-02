@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Scripts should fail on all logic errors, as we don't want to let them run amok
-set -o pipefail
-set -o functrace
 set -o errtrace
+set -o functrace
 set -o nounset
+set -o pipefail
 
 # The FINALCMDS array needs to be defined before setting up finally
 FINALCMDS=()
@@ -241,7 +241,7 @@ prunner () {
   while (($#)) ; do
     case "$1" in
       --command|-c) shift ; local PCMD="$1" ;;
-      --threads|-t) shift ; local THREADS="$1" ;;
+      --threads|-t) shift ; local -i THREADS="$1" ;;
       -*) quit "ERROR" "Option '$1' is not defined." ;;
       *) PQUEUE+=("$1") ;;
     esac
@@ -265,14 +265,14 @@ prunner () {
   wait
 }
 
+# Trap to do final tasks before exit
+trap finally EXIT
+
 # Trap for killing runaway processes and exiting
 trap "quit 'ALERT' 'Exiting on signal' '3'" SIGINT SIGTERM
 
 # Trap to capture errors
 trap 'quit "ALERT" "Command failed with exit code $?: $BASH_COMMAND" "$?"' ERR
-
-# Trap to do final tasks before exit
-trap finally EXIT
 
 # Trap to capture history within this script for debugging
 trap 'LOCAL_HISTORY+=("$BASH_COMMAND")' DEBUG
