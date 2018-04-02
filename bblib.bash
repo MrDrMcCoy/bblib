@@ -1,19 +1,45 @@
 #!/bin/bash
 
 # Scripts should fail on all logic errors, as we don't want to let them run amok
-set -e
 set -o pipefail
+set -o functrace
+set -o errtrace
+set -o nounset
 
 # The FINALCMDS array needs to be defined before setting up finally
 FINALCMDS=()
+# Array to store command history within the script
+LOCAL_HISTORY=()
 
 pprint () {
-  # Function to properly wrap and print text
+  # Function to format, line wrap, and print piped text
+  # Options:
+  #   [0-7]|[COLOR]: Prints the ASCII escape code to set color.
+  #   [bold]: Prints the ASCII escape code to set bold.
+  #   [underline]: Prints the ASCII escape code to set underline.
+  #   More info here: http://www.tldp.org/HOWTO/Bash-Prompt-HOWTO/x405.html
   # Usage:
-  #   command | pprint
-  #   pprint <<< "text"
-  local COLUMNS="${COLUMNS:-$(tput cols)}"
-  fold -sw "${COLUMNS:-80}"
+  #   command | pprint [options]
+  #   pprint [options] <<< "text"
+  local -i COLUMNS="${COLUMNS:-$(tput cols)}"
+  local PREFIX=
+  while (($#)) ; do
+    case "$1" in
+      0|black) PREFIX+="$(tput setaf 0)" ;;
+      1|red) PREFIX+="$(tput setaf 1)" ;;
+      2|green) PREFIX+="$(tput setaf 2)" ;;
+      3|yellow) PREFIX+="$(tput setaf 3)" ;;
+      4|blue) PREFIX+="$(tput setaf 4)" ;;
+      5|magenta) PREFIX+="$(tput setaf 5)" ;;
+      6|cyan) PREFIX+="$(tput setaf 6)" ;;
+      7|white) PREFIX+="$(tput setaf 7)" ;;
+      8|bold) PREFIX+="$(tput bold)" ;;
+      9|underline) PREFIX+="$(tput smul)" ;;
+      *) quit "CRITICAL" "Option '$1' is not defined." ;;
+    esac
+    shift
+  done
+  fold -sw "${COLUMNS:-80}" <<< "${PREFIX}$(cat /dev/stdin)$(tput sgr0)"
 }
 
 inarray () {
@@ -21,10 +47,8 @@ inarray () {
   # It works by taking all passed variables and seeing if the last one matches any before it.
   # It will return 0 and print the array index that matches on success,
   # and return 1 with nothing printed on failure.
-  # Usage:
-  #   inarray "${ARRAY[@]}" "SEARCHSTRING"
-  #####
-  local INDICIES=$#
+  # Usage: inarray "${ARRAY[@]}" [searchstring]
+  local -i INDICIES=$#
   local SEARCH=${!INDICIES}
   for ((INDEX=1 ; INDEX < $# ; INDEX++)) {
     if [ "${!INDEX}" == "${SEARCH}" ]; then
@@ -35,42 +59,71 @@ inarray () {
   return 1
 }
 
-# Convert to uppercase
-uc () { tr "[:lower:]" "[:upper:]" <<< "${@:-$(cat /dev/stdin)}" ; }
-# Convert to lowercase
-lc () { tr "[:upper:]" "[:lower:]" <<< "${@:-$(cat /dev/stdin)}" ; }
-# Print horizontal rule
+lc () {
+  # Convert stdin/arguments to lowercase
+  # Usage:
+  #   lc [string]
+  #   command | lc
+  tr "[:upper:]" "[:lower:]" <<< "${@:-$(cat /dev/stdin)}"
+}
+
+uc () {
+  # Convert stdin/arguments to uppercase
+  # Usage:
+  #   uc [string]
+  #   command | uc
+  tr "[:lower:]" "[:upper:]" <<< "${@:-$(cat /dev/stdin)}"
+}
+
 hr () {
+  # Print horizontal rule
+  # Usage: hr [character]
   local CHARACTER="${1:0:1}"
-  local COLUMNS=${COLUMNS:-$(tput cols)}
+  local -i COLUMNS=${COLUMNS:-$(tput cols)}
   printf '%*s\n' "${COLUMNS:-80}" '' | tr ' ' "${CHARACTER:--}"
 }
 
 log () {
   # Function to send log output to file, syslog, and stderr
   # Usage:
-  #     command |& log $SEVERITY
-  #     log $SEVERITY $MESSAGE
+  #   command |& log [severity]
+  #   log [severity] [message]
   # Variables:
-  #     LOGLEVEL: The cutoff for message severity to log (Default is INFO).
-  #####
-  local SEVERITY="$(uc "${1:-NOTICE}")"
+  #   LOGLEVEL: The cutoff for message severity to log (Default is INFO).
+  #   LOGFILE: Path to a log file to write messages to (Default is to skip file logging).
+  #   TRACEDEPTH: Sets how many function levels above this one to start a stack trace (Default is 1).
+  local -u SEVERITY="${1:-NOTICE}"
   local LOGMSG="${2:-$(cat /dev/stdin)}"
-  local LOGLEVELS=(EMERGENCY ALERT CRITICAL ERROR WARN NOTICE INFO DEBUG)
-  local LOGLEVEL="$(uc "${LOGLEVEL:-INFO}")"
-  local LOGTAG="[${SCRIPT_NAME:-$0}] [${CURRENT_FUNC:-SCRIPT_ROOT}] [${SEVERITY}]"
-  local NUMERIC_LOGLEVEL="$(inarray "${LOGLEVELS[@]}" "${LOGLEVEL}")"
-  local NUMERIC_SEVERITY="$(inarray "${LOGLEVELS[@]}" "${SEVERITY}")"
-  #####
-  if [ ${NUMERIC_SEVERITY:-5} -le ${NUMERIC_LOGLEVEL:-6} ] ; then
-    while read -r LINE ; do
-      logger -is -p user.${NUMERIC_SEVERITY:-5} -t "${LOGTAG} " -- "${LINE}"
-    done <<< "${LOGMSG}" |& \
-    if [ -n "${LOGFILE}" ] ; then
-      tee -a "${LOGFILE}"
-    else
-      cat /dev/stdin
-    fi
+  [ -n "$LOGMSG" ] || return 0
+  local -i TRACEDEPTH=${TRACEDEPTH:-1} # 0 would be this function, which is not useful
+  until [[ ! "${FUNCNAME[$TRACEDEPTH]}" =~ bash4check|quit|log ]] ; do
+    # We want to look above these functions as well
+    ((TRACEDEPTH++))
+  done
+  local LOGTAG="${SCRIPT_NAME:-$(basename "$0")} [${FUNCNAME[$TRACEDEPTH]}]"
+  local -a LOGLEVELS=(EMERGENCY ALERT CRITICAL ERROR WARN NOTICE INFO DEBUG)
+  local -a LOGCOLORS=("red bold underline" "red bold" "red underline" "red" "magenta" "cyan" "white" "yellow")
+  local -u LOGLEVEL="${LOGLEVEL:-INFO}"
+  local -i NUMERIC_LOGLEVEL="$(inarray "${LOGLEVELS[@]}" "${LOGLEVEL}")"
+  local -i NUMERIC_LOGLEVEL="${NUMERIC_LOGLEVEL:-6}"
+  local -i NUMERIC_SEVERITY="$(inarray "${LOGLEVELS[@]}" "${SEVERITY}")"
+  local -i NUMERIC_SEVERITY="${NUMERIC_SEVERITY:-5}"
+  # If EMERGENCY, ALERT, CRITICAL, or DEBUG, append stack trace to LOGMSG
+  if [ "$SEVERITY" == "DEBUG" ] || [ "${NUMERIC_SEVERITY}" -le 2 ] ; then
+    # If DEBUG, include the command that was run
+    [ "$SEVERITY" != "DEBUG" ] || LOGMSG+=" $(eval echo "Command: ${LOCAL_HISTORY[-20]}")"
+    for (( i = TRACEDEPTH; i < ${#FUNCNAME[@]}; i++ )) ; do
+      LOGMSG+=" [${BASH_SOURCE[$i]}:${FUNCNAME[$i]}:${BASH_LINENO[$i-1]}]"
+    done
+  fi
+  # Send message to logger
+  if [ "${NUMERIC_SEVERITY}" -le "${NUMERIC_LOGLEVEL}" ] ; then
+    tr '\n' ' ' <<< "${LOGMSG}" | logger -s -p "user.${NUMERIC_SEVERITY}" -t "${LOGTAG} " |& \
+      if [ -n "${LOGFILE:-}" ] ; then
+        tee -a "${LOGFILE}" | pprint ${LOGCOLORS[$NUMERIC_SEVERITY]}
+      elif [ ! -t 0 ]; then
+        pprint ${LOGCOLORS[$NUMERIC_SEVERITY]} < /dev/stdin
+      fi
   fi 1>&2
 }
 
@@ -86,17 +139,16 @@ log_emer () { log "EMERGENCY" "$*" ; }
 
 quit () {
   # Function to log a message and exit
-  # Usage:
-  #    quit $SEVERITY $MESSAGE $EXITCODE
-  log "${1:-WARN}" "${2:-Exiting without reason}"
+  # Usage: quit [severity] [message] [exitcode]
+  log "${1:-CRITICAL}" "${2:-Exiting without reason}"
   exit "${3:-3}"
 }
 
 bash4check () {
   # Call this function to enable features that depend on bash 4.0+.
-  if [ ${BASH_VERSINFO[0]} -lt 4 ] ; then
-    log "ERROR" "Sorry, you need at least bash version 4 to run this function: $CURRENT_FUNC"
-    return 1
+  # Usage: bash4check
+  if [ "${BASH_VERSINFO[0]}" -lt 4 ] ; then
+    quit "ALERT" "Sorry, you need at least bash version 4 to run this function: ${FUNCNAME[1]}"
   else
     log "DEBUG" "This script is safe to enable BASH version 4 features"
   fi
@@ -104,17 +156,16 @@ bash4check () {
 
 finally () {
   # Function to perform final tasks before exit
-  local CURRENT_FUNC="finally"
+  # Usage: FINALCMDS+=("command arg")
   until [ "${#FINALCMDS[@]}" == 0 ] ; do
-      log "DEBUG" "Executing pre-exit command: ${FINALCMDS[-1]}"
-      eval "${FINALCMDS[-1]}"
-      unset FINALCMDS[-1]
+    ${FINALCMDS[-1]} 2> >(log "ERROR") | log "DEBUG"
+    unset "FINALCMDS[-1]"
   done
 }
 
 checkpid () {
   # Check for and maintain pidfile
-  local CURRENT_FUNC="checkpid"
+  # Usage: checkpid
   local PIDFILE="${PIDFILE:-${0}.pid}"
   if [ ! -d "/proc/$$" ]; then
     quit "ERROR" "This function requires procfs. Are you on Linux?"
@@ -122,7 +173,7 @@ checkpid () {
     quit "WARN" "This script is already running with PID $(cat "${PIDFILE}" 2> /dev/null), exiting"
   else
     echo -n "$$" > "${PIDFILE}"
-    FINALCMDS+=("rm -v '${PIDFILE}'")
+    FINALCMDS+=("rm '${PIDFILE}'")
     log "DEBUG" "PID $$ has no conflicts and has been written to ${PIDFILE}"
   fi
 }
@@ -130,18 +181,20 @@ checkpid () {
 requireuser () {
   # Checks to see if current user matches $REQUIREUSER and exits if not.
   # REQUIREUSER can be set as a variable or passed in as an argument.
-  local CURRENT_FUNC="requireuser"
-  local REQUIREUSER="${1:-$REQUIREUSER}"
-  if [ -z $REQUIREUSER ] ; then
+  # Usage: requireuser [user]
+  local REQUIREUSER="${1:-${REQUIREUSER:-}}"
+  if [ -z "${REQUIREUSER:-}" ] ; then
     quit "ERROR" "requireuser was called, but \$REQUIREUSER is not set"
-  elif [ "$REQUIREUSER" != "$USER" ] ; then
+  elif [ "$REQUIREUSER" != "$EUID" ] ; then
     quit "ERROR" "Only $REQUIREUSER is allowed to run this script"
   else
-    log "DEBUG" "User '$USER' matches '$REQUIREUSER' and is allowed to run this script"
+    log "DEBUG" "User '$EUID' matches '$REQUIREUSER' and is allowed to run this script"
   fi
 }
 
 usage () {
+# Print usage information
+# Usage: usage
 pprint << HERE
 $0: An example script
 
@@ -157,73 +210,72 @@ HERE
 
 argparser () {
   # Accept command-line arguments
-  # Usage:
-  #   argparser "$@"
-  # More info here: http://wiki.bash-hackers.org/howto/getopts_tutorial
-  local CURRENT_FUNC="argparser"
+  # Usage: argparser "$@"
+  local OPT=
+  local OPTARG=
+  local OPTIND=
+  [ -n "$*" ] || quit "ERROR" "No arguments were passed."
   while getopts ":s:hv" OPT ; do
     case ${OPT} in
       h) usage ;;
       s) source "${OPTARG}" ;;
-      v) set -x ; LOGLEVEL=DEBUG ;;
+      v) set -x ; export LOGLEVEL=DEBUG ;;
       :) quit "ERROR" "Option '-${OPTARG}' requires an argument. For usage, try '${0} -h'." ;;
-      *) quit "ERROR" "Invalid option: '-${OPTARG}'. For usage, try '${0} -h'." ;;
+      *) quit "ERROR" "Option '-${OPTARG}' is not defined. For usage, try '${0} -h'." ;;
     esac
   done
 }
 
 prunner () {
-  # Executes jobs in parallel
+  # Run commands in parallel
+  # Options:
+  #   -t [threads]
+  #   -c [command to pass arguments to]
   # Usage:
-  #   prunner "command args" "command args"
-  #   command_generator | prunner
-  #   prunner -t 6 -c gzip FILE FILE FILE
-  #   find . -type f | prunner -c gzip -t 8
-  local CURRENT_FUNC="prunner"
-  local JOB_QUEUE=()
-  local COMMAND=""
-  # Process options
-  while getopts ":c:t:" OPT ; do
-    case ${OPT} in
-      c) local COMMAND="${OPTARG}" ;;
-      t) local THREADS="${OPTARG}" ;;
-      :) quit "ERROR" "Option '-${OPTARG}' requires an argument." ;;
-      *) quit "ERROR" "Option '-${OPTARG}' is not defined." ;;
+  #   prunner "command arg" "command"
+  #   prunner -c gzip *.txt
+  #   find . -maxdepth 1 | prunner -c 'echo found file:' -t 6
+  local -a PQUEUE=()
+  local PCMD=
+  # Process option arguments
+  while (($#)) ; do
+    case "$1" in
+      --command|-c) shift ; local PCMD="$1" ;;
+      --threads|-t) shift ; local THREADS="$1" ;;
+      -*) quit "ERROR" "Option '$1' is not defined." ;;
+      *) PQUEUE+=("$1") ;;
     esac
+    shift
   done
-  # Add input lines to queue, split by newlines
+  # Add lines from stdin to queue
   if [ ! -t 0 ] ; then
     while read -r LINE ; do
-      JOB_QUEUE+=("$LINE")
+      PQUEUE+=("$LINE")
     done
   fi
-  # Add non-option arguments to queue
-  shift $(($OPTIND-1))
-  for ARG in "$@" ; do
-    JOB_QUEUE+=("$ARG")
-  done
-  local JOB_MAX="${#JOB_QUEUE[@]}"
-  local JOB_INDEX=0
-  local THREADS=${THREADS:-8}
-  # Start running the commands in the queue
-  log "DEBUG" "Starting parallel execution of $JOB_MAX jobs with $THREADS threads."
-  until [ ${#JOB_QUEUE[@]} = 0 ] ; do
-    if [ "$(jobs -rp | wc -l)" -lt "${THREADS}" ] ; then
-      log "DEBUG" "Starting command in parallel ($(($JOB_INDEX+1))/$JOB_MAX): ${COMMAND} ${JOB_QUEUE[$JOB_INDEX]}"
-      eval "${COMMAND} ${JOB_QUEUE[$JOB_INDEX]}" |& log "DEBUG" || true &
-      unset JOB_QUEUE[$JOB_INDEX]
-      ((JOB_INDEX++)) || true # I have no idea why this needs '|| true', but it does and it works.
+  local -i QCOUNT="${#PQUEUE[@]}"
+  local -i INDEX=0
+  until [ ${#PQUEUE[@]} == 0 ] ; do
+    if [ "$(jobs -rp | wc -l)" -lt "${THREADS:-8}" ] ; then
+      ${PCMD} ${PQUEUE[$INDEX]} 2> >(log "ERROR") | log "DEBUG" &
+      unset "PQUEUE[$INDEX]"
+      ((INDEX++)) || true
     fi
   done
   wait
-  log "DEBUG" "Parallel execution finished for $JOB_MAX jobs."
 }
 
 # Trap for killing runaway processes and exiting
 trap "quit 'ALERT' 'Exiting on signal' '3'" SIGINT SIGTERM
 
+# Trap to capture errors
+trap 'quit "ALERT" "Command failed with exit code $?: $BASH_COMMAND" "$?"' ERR
+
 # Trap to do final tasks before exit
 trap finally EXIT
+
+# Trap to capture history within this script for debugging
+trap 'LOCAL_HISTORY+=("$BASH_COMMAND")' DEBUG
 
 # If a .conf file exists for this script, source it
 if [ -f "${0}.conf" ] ; then
