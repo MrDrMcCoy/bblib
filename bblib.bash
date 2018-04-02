@@ -171,7 +171,7 @@ checkpid () {
     quit "ERROR" "This function requires procfs. Are you on Linux?"
   elif [[ ! -f "${PIDFILE}" ]] ; then
     echo -n "$$" > "${PIDFILE}"
-    FINALCMDS+=("rm -v '${PIDFILE}'")
+    FINALCMDS+=("rm -v ${PIDFILE}")
     log "DEBUG" "PID $$ has no conflicts and has been written to ${PIDFILE}"
   elif [[ "$( cat "${PIDFILE}" || true )" -ne $$ ]] ; then
     quit "ERROR" "This script is already running, exiting."
