@@ -170,12 +170,14 @@ checkpid () {
   local PIDFILE="${PIDFILE:-${0}.pid}"
   if [[ ! -d "/proc/$$" ]]; then
     quit "ERROR" "This function requires procfs. Are you on Linux?"
-  elif [[ -f "${PIDFILE}" ]] && [[ "$(cat "${PIDFILE}" || true |& log "DEBUG")" -eq $$ ]] ; then
-    quit "WARN" "This script is already running with PID $(cat "${PIDFILE}" 2> /dev/null), exiting"
-  else
+  elif [[ ! -f "${PIDFILE}" ]] ; then
     echo -n "$$" > "${PIDFILE}"
     FINALCMDS+=("rm '${PIDFILE}'")
     log "DEBUG" "PID $$ has no conflicts and has been written to ${PIDFILE}"
+  elif [[ "$( cat "${PIDFILE}" || true )" -ne $$ ]] ; then
+    quit "ERROR" "This script is already running, exiting."
+  else
+    quit "ALERT" "Unknown error verifying PID."
   fi
   set +x
 }
