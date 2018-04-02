@@ -29,9 +29,19 @@ main () {
 
   # Test lc, uc, pprint
   log "INFO" "Test lc"
-  head -n1 lorem-ipsum.txt | lc | pprint cyan
+  head -n1 lorem-ipsum.txt | lc | pprint
   log "INFO" "Test uc"
-  tail -n1 lorem-ipsum.txt | uc | pprint blue
+  tail -n1 lorem-ipsum.txt | uc | pprint
+  pprint 0 <<< black
+  pprint 1 <<< red
+  pprint 2 <<< green
+  pprint 3 <<< yellow
+  pprint 4 <<< blue
+  pprint 5 <<< magenta
+  pprint 6 <<< cyan
+  pprint 7 <<< white
+  pprint 8 <<< bold
+  pprint 9 <<< underline
 
   # Test shorthand log log loggers
   log_debug "shorthand log_debug test"
