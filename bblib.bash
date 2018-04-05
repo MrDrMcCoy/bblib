@@ -271,7 +271,7 @@ trap finally EXIT
 trap "quit 'ALERT' 'Exiting on signal' '3'" INT TERM QUIT HUP
 
 # Trap to capture errors
-trap 'quit "ALERT" "Command failed with exit code $?: $BASH_COMMAND" "$?"' ERR
+trap 'log "ALERT" "Command failed with exit code $?: $BASH_COMMAND" "$?"' ERR
 
 # Trap to capture history within this script for debugging
 trap 'LOCAL_HISTORY+=("$BASH_COMMAND")' DEBUG
