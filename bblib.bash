@@ -120,7 +120,7 @@ log () {
   # Send message to logger
   if [ "${NUMERIC_SEVERITY}" -le "${NUMERIC_LOGLEVEL}" ] ; then
     tr '\n' ' ' <<< "${LOGMSG}" | logger -s -p "user.${NUMERIC_SEVERITY}" -t "${LOGTAG} " |& \
-      if [ -n "${LOGFILE:-}" ] ; then
+      if [ -n "${LOGFILE:-}" ] && [ ! -t 0 ] ; then
         tee -a "${LOGFILE}" | pprint ${LOGCOLORS[$NUMERIC_SEVERITY]}
       elif [ ! -t 0 ]; then
         pprint ${LOGCOLORS[$NUMERIC_SEVERITY]} < /dev/stdin
@@ -168,18 +168,12 @@ checkpid () {
   # Check for and maintain pidfile
   # Usage: checkpid
   local PIDFILE="${PIDFILE:-${0}.pid}"
-  if [[ ! -d "/proc/$$" ]]; then
-    quit "ERROR" "This function requires procfs. Are you on Linux?"
-  elif [[ ! -f "${PIDFILE}" ]] ; then
-    echo -n "$$" > "${PIDFILE}"
+  if [[ $( ps ao args | grep -wc "$(basename "$0")" ) -gt 3 ]] ; then
+    quit "ERROR" "Script '$(basename "$0")' is already running, exiting."
+  else
+    echo "$$" > "${PIDFILE}"
     FINALCMDS+=("rm -v ${PIDFILE}")
     log "DEBUG" "PID $$ has no conflicts and has been written to ${PIDFILE}"
-  elif [[ "$( cat "${PIDFILE}" || true )" -ne $$ ]] ; then
-    quit "ERROR" "This script is already running, exiting."
-  elif [[ "$( cat "${PIDFILE}" || true )" -eq $$ ]] ; then
-    log "DEBUG" "PID $$ matches the contents of ${PIDFILE}, proceeding."
-  else
-    quit "ALERT" "Unknown error verifying unique PID."
   fi
 }
 
@@ -262,7 +256,7 @@ prunner () {
   local -i INDEX=0
   until [ ${#PQUEUE[@]} == 0 ] ; do
     if [ "$(jobs -rp | wc -l)" -lt "${THREADS:-8}" ] ; then
-      ${PCMD} ${PQUEUE[$INDEX]} 2> >(log "ERROR") | log "DEBUG" &
+      ${PCMD} ${PQUEUE[$INDEX]}
       unset "PQUEUE[$INDEX]"
       ((INDEX++)) || true
     fi

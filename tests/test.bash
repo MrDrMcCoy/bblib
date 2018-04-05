@@ -8,6 +8,12 @@ main () {
 
   log "INFO" "Starting tests"
 
+  # Pid check
+  log "INFO" "Test checkpid"
+  checkpid || true
+  log "INFO" "Test checkpid in second shell"
+  bash "$0" || true & wait
+
   # Test argparser
   log "INFO" "Test argparser with no options"
   bash -c 'source ../bblib.bash ; source test.bash.conf ; argparser' || true
@@ -25,7 +31,7 @@ main () {
   # Test hr
   log "INFO" "Test hr"
   hr
-  hr =
+  hr = | pprint yellow
 
   # Test lc, uc, pprint line wrapping
   log "INFO" "Test lc"
@@ -59,12 +65,6 @@ main () {
   # Test for bash 4
   log "INFO" "Test bash4check"
   bash4check
-
-  # Pid check
-  log "INFO" "Test checkpid"
-  checkpid || true
-  log "INFO" "Test checkpid in second shell"
-  bash -c 'source ../bblib.bash ; source test.bash.conf ; checkpid' || true
 
   # User check
   log "INFO" "Test requireuser with \$REQUIREUSER"
