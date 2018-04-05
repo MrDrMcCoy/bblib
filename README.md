@@ -97,9 +97,8 @@ Once `bblib.bash` is sourced in your script, you may refer to any of its supplie
   - Description: A function that runs extra commands before the script exits
   - Usage: Add actions to its list by running: `FINALCMDS+=("command arg arg")`
 - `checkpid`
-  - Description: Checks to see if another copy of this script is running by maintaining a PID file
+  - Description: Checks to see if another copy of this script is running by checking `ps` and maintaining a PID file.
   - Usage: `checkpid`
-  - Notes: This function only works properly in Linux, as it depends on PROCFS.
 - `prunner`
   - Description: Executes commands in parallel.
   - Usage:
@@ -161,8 +160,14 @@ The commands that `bblib.bash` calls out to are listed here, in case you are on 
   - Used by: `usage`
 - `fold`
   - Used by: `pprint`
+- `grep`
+  - Used by: `checkpid`
 - `logger`
   - Used by: `log`
+- `ps`
+  - Used by: `checkpid`
+- `rm`
+  - Used by: `checkpid`
 - `tee`
   - Used by: `log`
 - `tr`
