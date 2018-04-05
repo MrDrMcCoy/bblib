@@ -1,13 +1,13 @@
 # bblib
 
-The _"Better BASH Library"_: A set of functions to assist with creating well-written and reliable BASH scripts. The functions are documented in-line within `bblib.bash`, and a simple example that uses it is in `example.bash`.
+The _"Better Bash Library"_: A set of functions to assist with creating well-written and reliable Bash scripts. The functions are documented in-line within `bblib.bash`, and a simple example that uses it is in `example.bash`.
 
 ## Usage
 
-Add this to the top of your BASH script:
+Add this to the top of your Bash script:
 
 ```bash
-source <(wget -qO- https://raw.githubusercontent.com/MrDrMcCoy/bblib/1.1.7/bblib.bash)
+source <(wget -qO- https://raw.githubusercontent.com/MrDrMcCoy/bblib/1.1.8/bblib.bash)
 ```
 
 Alternately, clone this repo locally and use `source` with the full path to `bblib.bash`.
@@ -91,15 +91,14 @@ Once `bblib.bash` is sourced in your script, you may refer to any of its supplie
   - Description: Checks to see if the user running the script matches the desired username and exits on failure.
   - Usage: `requireuser [user]`
 - `bash4check`
-  - Description: Checks to see if you are on BASH 4.0 or above and exits if not.
-  - Usage: Place `bash4check` at the beginning of any function that uses BASH 4+ features.
+  - Description: Checks to see if you are on Bash 4.0 or above and exits if not.
+  - Usage: Place `bash4check` at the beginning of any function that uses Bash 4+ features.
 - `finally`
   - Description: A function that runs extra commands before the script exits
   - Usage: Add actions to its list by running: `FINALCMDS+=("command arg arg")`
 - `checkpid`
-  - Description: Checks to see if another copy of this script is running by maintaining a PID file
+  - Description: Checks to see if another copy of this script is running by checking `ps` and maintaining a PID file.
   - Usage: `checkpid`
-  - Notes: This function only works properly in Linux, as it depends on PROCFS.
 - `prunner`
   - Description: Executes commands in parallel.
   - Usage:
@@ -130,7 +129,7 @@ Once `bblib.bash` is sourced in your script, you may refer to any of its supplie
 - `LOGFILE`
   - Description: Set this to have `log` additionally output to a file.
   - Used by: `log`.
-  - Notes: This will capture debug output if BASH has `set -x`.
+  - Notes: This will capture debug output if Bash has `set -x`.
   - Default: _unset_
 - `PIDFILE`
   - Description: The path to a file for tracking the PID of the script.
@@ -161,8 +160,14 @@ The commands that `bblib.bash` calls out to are listed here, in case you are on 
   - Used by: `usage`
 - `fold`
   - Used by: `pprint`
+- `grep`
+  - Used by: `checkpid`
 - `logger`
   - Used by: `log`
+- `ps`
+  - Used by: `checkpid`
+- `rm`
+  - Used by: `checkpid`
 - `tee`
   - Used by: `log`
 - `tr`
@@ -174,8 +179,8 @@ The commands that `bblib.bash` calls out to are listed here, in case you are on 
 
 If you would like to extend this library, some resources for advanced usage are available here:
 
-- The BASH Beginners Guide, which is not just for beginners: <https://www.tldp.org/LDP/Bash-Beginners-Guide/html/>
-- The Advanced BASH guide: <http://tldp.org/LDP/abs/html/>
-- The BASH Hackers Wiki has great advanced usage description and examples for BASH: <http://wiki.bash-hackers.org/>
-- BASH Style Guide: <https://google.github.io/styleguide/shell.xml>
+- The Bash Beginners Guide, which is not just for beginners: <https://www.tldp.org/LDP/Bash-Beginners-Guide/html/>
+- The Advanced Bash guide: <http://tldp.org/LDP/abs/html/>
+- The Bash Hackers Wiki has great advanced usage description and examples for Bash: <http://wiki.bash-hackers.org/>
+- Bash Style Guide: <https://google.github.io/styleguide/shell.xml>
 - A very good `getopts` tutorial: <https://sookocheff.com/post/bash/parsing-bash-script-arguments-with-shopts/>

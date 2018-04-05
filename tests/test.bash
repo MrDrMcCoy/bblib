@@ -8,6 +8,12 @@ main () {
 
   log "INFO" "Starting tests"
 
+  # Pid check
+  log "INFO" "Test checkpid"
+  checkpid || true
+  log "INFO" "Test checkpid in second shell"
+  bash "$0" || true & wait
+
   # Test argparser
   log "INFO" "Test argparser with no options"
   bash -c 'source ../bblib.bash ; source test.bash.conf ; argparser' || true
@@ -23,14 +29,28 @@ main () {
   bash -c 'source ../bblib.bash ; source test.bash.conf ; argparser -y' || true
 
   # Test hr
-  log "INFO" "Test hr ="
-  hr =
+  log "INFO" "Test hr"
+  hr
+  hr = | pprint yellow
 
-  # Test lc, uc, and pprint
+  # Test lc, uc, pprint line wrapping
   log "INFO" "Test lc"
-  lc < lorem-ipsum.txt | pprint > lorem-ipsum-lc-pprint.out |& log "DEBUG"
+  head -n1 lorem-ipsum.txt | lc | pprint
   log "INFO" "Test uc"
-  uc < lorem-ipsum.txt | pprint > lorem-ipsum-uc-pprint.out |& log "DEBUG"
+  tail -n1 lorem-ipsum.txt | uc | pprint
+
+  # Test pprint colors
+  log "INFO" "Test pprint"
+  pprint 0 <<< black
+  pprint 1 <<< red
+  pprint 2 <<< green
+  pprint 3 <<< yellow
+  pprint 4 <<< blue
+  pprint 5 <<< magenta
+  pprint 6 <<< cyan
+  pprint 7 <<< white
+  pprint 8 <<< bold
+  pprint 9 <<< underline
 
   # Test shorthand log log loggers
   log_debug "shorthand log_debug test"
@@ -45,12 +65,6 @@ main () {
   # Test for bash 4
   log "INFO" "Test bash4check"
   bash4check
-
-  # Pid check
-  log "INFO" "Test checkpid"
-  checkpid || true
-  log "INFO" "Test checkpid in second shell"
-  bash -c 'source ../bblib.bash ; source test.bash.conf ; checkpid' || true
 
   # User check
   log "INFO" "Test requireuser with \$REQUIREUSER"
@@ -71,9 +85,9 @@ main () {
 
   # Parallel test
   log "INFO" "Test prunner gzipping the .out files with arguments for the jobs"
-  prunner -c "gzip -fk" *.out
-  log "INFO" "Test prunner echoing the .out files with stdin for the jobs"
-  find . -maxdepth 1 -type f -name "*.out" | head -n5 | prunner -c "echo found file " -t 6
+  prunner -c "gzip -f" *.out
+  log "INFO" "Test prunner echoing the .gz files with stdin for the jobs"
+  find . -maxdepth 1 -type f -name "*.gz" | head -n5 | prunner -c "echo found file " -t 6
 
   # Add cleanup tasks
   FINALCMDS+=('rm -v *.out')

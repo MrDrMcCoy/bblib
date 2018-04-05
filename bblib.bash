@@ -78,9 +78,10 @@ uc () {
 hr () {
   # Print horizontal rule
   # Usage: hr [character]
-  local CHARACTER="${1:0:1}"
+  local CHARACTER="${1:--}"
+  local CHARACTER="${CHARACTER:0:1}"
   local -i COLUMNS=${COLUMNS:-$(tput cols)}
-  printf '%*s\n' "${COLUMNS:-80}" '' | tr ' ' "${CHARACTER:--}"
+  printf '%*s\n' "${COLUMNS:-80}" '' | tr ' ' "${CHARACTER}"
 }
 
 log () {
@@ -119,7 +120,7 @@ log () {
   # Send message to logger
   if [ "${NUMERIC_SEVERITY}" -le "${NUMERIC_LOGLEVEL}" ] ; then
     tr '\n' ' ' <<< "${LOGMSG}" | logger -s -p "user.${NUMERIC_SEVERITY}" -t "${LOGTAG} " |& \
-      if [ -n "${LOGFILE:-}" ] ; then
+      if [ -n "${LOGFILE:-}" ] && [ ! -t 0 ] ; then
         tee -a "${LOGFILE}" | pprint ${LOGCOLORS[$NUMERIC_SEVERITY]}
       elif [ ! -t 0 ]; then
         pprint ${LOGCOLORS[$NUMERIC_SEVERITY]} < /dev/stdin
@@ -150,7 +151,7 @@ bash4check () {
   if [ "${BASH_VERSINFO[0]}" -lt 4 ] ; then
     quit "ALERT" "Sorry, you need at least bash version 4 to run this function: ${FUNCNAME[1]}"
   else
-    log "DEBUG" "This script is safe to enable BASH version 4 features"
+    log "DEBUG" "This script is safe to enable Bash version 4 features"
   fi
 }
 
@@ -167,18 +168,12 @@ checkpid () {
   # Check for and maintain pidfile
   # Usage: checkpid
   local PIDFILE="${PIDFILE:-${0}.pid}"
-  if [[ ! -d "/proc/$$" ]]; then
-    quit "ERROR" "This function requires procfs. Are you on Linux?"
-  elif [[ ! -f "${PIDFILE}" ]] ; then
-    echo -n "$$" > "${PIDFILE}"
+  if [[ $( ps ao args | grep -wc "$(basename "$0")" ) -gt 3 ]] ; then
+    quit "ERROR" "Script '$(basename "$0")' is already running, exiting."
+  else
+    echo "$$" > "${PIDFILE}"
     FINALCMDS+=("rm -v ${PIDFILE}")
     log "DEBUG" "PID $$ has no conflicts and has been written to ${PIDFILE}"
-  elif [[ "$( cat "${PIDFILE}" || true )" -ne $$ ]] ; then
-    quit "ERROR" "This script is already running, exiting."
-  elif [[ "$( cat "${PIDFILE}" || true )" -eq $$ ]] ; then
-    log "DEBUG" "PID $$ matches the contents of ${PIDFILE}, proceeding."
-  else
-    quit "ALERT" "Unknown error verifying unique PID."
   fi
 }
 
@@ -261,7 +256,7 @@ prunner () {
   local -i INDEX=0
   until [ ${#PQUEUE[@]} == 0 ] ; do
     if [ "$(jobs -rp | wc -l)" -lt "${THREADS:-8}" ] ; then
-      ${PCMD} ${PQUEUE[$INDEX]} 2> >(log "ERROR") | log "DEBUG" &
+      ${PCMD} ${PQUEUE[$INDEX]}
       unset "PQUEUE[$INDEX]"
       ((INDEX++)) || true
     fi
@@ -273,7 +268,7 @@ prunner () {
 trap finally EXIT
 
 # Trap for killing runaway processes and exiting
-trap "quit 'ALERT' 'Exiting on signal' '3'" SIGINT SIGTERM
+trap "quit 'ALERT' 'Exiting on signal' '3'" INT TERM QUIT HUP
 
 # Trap to capture errors
 trap 'quit "ALERT" "Command failed with exit code $?: $BASH_COMMAND" "$?"' ERR
