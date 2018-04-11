@@ -8,8 +8,6 @@ set -o pipefail
 
 # The FINALCMDS array needs to be defined before setting up finally
 FINALCMDS=()
-# Array to store command history within the script
-LOCAL_HISTORY=()
 
 pprint () {
   # Function to format, line wrap, and print piped text
@@ -112,7 +110,6 @@ log () {
   # If EMERGENCY, ALERT, CRITICAL, or DEBUG, append stack trace to LOGMSG
   if [[ "$SEVERITY" == "DEBUG" ]] || [[ "${NUMERIC_SEVERITY}" -le 2 ]] ; then
     # If DEBUG, include the command that was run
-    [[ "$SEVERITY" != "DEBUG" ]] || LOGMSG+=" $(eval echo "Command: ${PWD} \$ ${LOCAL_HISTORY[-$((TRACEDEPTH+19))]}" 2>/dev/null || true)"
     for (( i = TRACEDEPTH; i < ${#FUNCNAME[@]}; i++ )) ; do
       LOGMSG+=" > ${BASH_SOURCE[$i]}:${FUNCNAME[$i]}:${BASH_LINENO[$i-1]}"
     done
@@ -271,10 +268,7 @@ trap finally EXIT
 trap "quit 'ALERT' 'Exiting on signal' '3'" INT TERM QUIT HUP
 
 # Trap to capture errors
-trap 'quit "ALERT" "Command failed with exit code $?: $BASH_COMMAND" "$?"' ERR
-
-# Trap to capture history within this script for debugging
-trap 'LOCAL_HISTORY+=("$BASH_COMMAND")' DEBUG
+trap 'log "ALERT" "Command failed with exit code $?: $BASH_COMMAND" "$?"' ERR
 
 # If a .conf file exists for this script, source it
 if [ -f "${0}.conf" ] ; then
