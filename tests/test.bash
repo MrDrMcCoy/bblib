@@ -98,4 +98,4 @@ main () {
 
 main "$@"
 
-quit "ERROR" "Script reached end unexpecedtly!"
+quit "NOTICE" "Tests complete."
